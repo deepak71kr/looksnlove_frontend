@@ -21,5 +21,14 @@ export default defineConfig({
       }
     }
   },
-  base : process.env.VITE_BASE_URL || "/looksnlove_frontend"
+  base : process.env.VITE_BASE_URL || "/looksnlove_frontend",
+  headers: {
+    source: '/:path*',
+    headers: [
+      {
+        key: 'Content-Security-Policy',
+        value: "font-src 'self' *.vercel.com *.gstatic.com vercel.live data:;"
+      }
+    ]
+  }
 })
