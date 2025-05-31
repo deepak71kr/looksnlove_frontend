@@ -1,0 +1,116 @@
+<div className="Outer">
+    <Navbar/>
+    <header className="w-full bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <nav className="flex items-center justify-between">
+          <div className="text-xl font-serif tracking-wider">
+            BLUE LAGOON
+            <div className="text-sm tracking-widest">Beauty</div>
+          </div>
+          <div className="hidden md:flex items-center space-x-8">
+            <a href="#" className="hover:text-gray-600">
+              Front page
+            </a>
+            <a href="#" className="hover:text-gray-600">
+              Services
+            </a>
+            <a href="#" className="hover:text-gray-600">
+              Pricelist
+            </a>
+            <a href="#" className="hover:text-gray-600">
+              Team
+            </a>
+            <a href="#" className="hover:text-gray-600">
+              Booking
+            </a>
+            <a href="#" className="hover:text-gray-600">
+              Gift cards
+            </a>
+            <a href="#" className="hover:text-gray-600">
+              Blue Lagoon Beauty
+            </a>
+            <a href="#" className="hover:text-gray-600">
+              Contact
+            </a>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button className="hover:text-gray-600">FI</button>
+            <a href="#" className="hover:text-gray-600">
+              <Instagram size={20} />
+            </a>
+            <a href="#" className="hover:text-gray-600">
+              <Facebook size={20} />
+            </a>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div className="Inner">
+    <main className="w-full bg-white">
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+          <div className="flex flex-col items-center">
+            <Star className="w-8 h-8 text-pink-300 mb-4" />
+            <h3 className="text-3xl font-semibold mb-2">4,8/5</h3>
+            <p className="text-gray-600 text-sm">Our rating in Google.</p>
+          </div>
+          <div className="flex flex-col items-center">
+            <Eye className="w-8 h-8 text-pink-300 mb-4" />
+            <h3 className="text-3xl font-semibold mb-2">600 000+</h3>
+            <p className="text-gray-600 text-sm">
+              Beauty services done in total!
+            </p>
+          </div>
+          <div className="flex flex-col items-center">
+            <Diamond className="w-8 h-8 text-pink-300 mb-4" />
+            <h3 className="text-3xl font-semibold mb-2">18 years</h3>
+            <p className="text-gray-600 text-sm">
+              That's how long we've been operating in the beauty industry!
+            </p>
+          </div>
+          <div className="flex flex-col items-center">
+            <Heart className="w-8 h-8 text-pink-300 mb-4" />
+            <h3 className="text-3xl font-semibold mb-2">150</h3>
+            <p className="text-gray-600 text-sm">
+              There are already so many of us!
+            </p>
+          </div>
+        </div>
+      </section>
+      <section className="bg-pink-50 py-16 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl font-serif mb-6">Book your appointment</h2>
+          <p className="text-gray-600 mb-8">
+            We serve you in 10 salons in Helsinki, Espoo, Turku and Tampere.
+            Book your appointment at the best location for you. You can make an
+            appointment easily with our online appointment booking or by calling
+            our customer service at +358 10 5826 270.
+          </p>
+          <button className="px-8 py-3 border border-pink-300 text-pink-500 hover:bg-pink-100 transition-colors">
+            BOOKING
+          </button>
+        </div>
+      </section>
+      <section className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-4xl font-serif italic mb-4">
+          The new BL Spring
+          <br />
+          Glamor Collection
+          <br />
+          and the spring
+          <br />
+          2025 beauty trends
+        </h2>
+        <p className="text-gray-600 mb-8">
+          This collection of inspiration offers trendy ideas for spring
+          celebrations and styles. Get to know e.g. to lace nails and caviar
+          decorations, and see our most interesting picks from spring beauty
+          trends!
+        </p>
+        <button className="px-8 py-3 border border-pink-300 text-pink-500 hover:bg-pink-100 transition-colors">
+          SEE MORE & GET THE LOOK
+        </button>
+      </section>
+    </main>
+    </div>
+  </div>

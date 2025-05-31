@@ -1,0 +1,187 @@
+/* src/components/Services/services.css */
+:root {
+  --primary-pink: #ff69b4;
+  --light-pink: #ffb6c1;
+  --dark-pink: #db7093;
+  --hover-pink: #ff1493;
+  --background-pink: #fff0f5;
+  --text-dark: #333;
+  --text-light: #666;
+  --white: #fff;
+  --shadow: 0 2px 8px rgba(255, 105, 180, 0.1);
+  --transition: all 0.3s ease;
+}
+
+.services-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: var(--white);
+}
+
+.services-page h1 {
+  color: var(--primary-pink);
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.accordion-container {
+  margin-top: 20px;
+}
+
+.accordion-item {
+  margin-bottom: 20px;
+  border: 1px solid var(--light-pink);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.accordion-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 105, 180, 0.15);
+}
+
+.accordion-header {
+  padding: 20px;
+  background: var(--background-pink);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.accordion-header h3 {
+  color: var(--primary-pink);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.accordion-header:hover {
+  background: var(--light-pink);
+}
+
+.accordion-header:hover h3 {
+  color: var(--white);
+}
+
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  border-bottom: 1px solid var(--light-pink);
+  transition: var(--transition);
+  background: var(--white);
+}
+
+.service-item:hover {
+  background: var(--background-pink);
+}
+
+.service-name {
+  font-weight: 500;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+}
+
+.price-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.price-btn {
+  background: var(--white);
+  border: 2px solid var(--primary-pink);
+  color: var(--primary-pink);
+  padding: 8px 20px;
+  border-radius: 25px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.price-btn:hover {
+  background: var(--primary-pink);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 105, 180, 0.2);
+}
+
+.inr {
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.add-icon {
+  margin-left: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.no-services {
+  padding: 30px;
+  text-align: center;
+  color: var(--text-light);
+  font-style: italic;
+  background: var(--background-pink);
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.no-price {
+  color: var(--text-light);
+  font-style: italic;
+  padding: 8px 15px;
+  background: var(--background-pink);
+  border-radius: 20px;
+}
+
+/* Loading and error states */
+.loading {
+  text-align: center;
+  padding: 60px;
+  color: var(--primary-pink);
+  font-size: 1.2rem;
+  background: var(--background-pink);
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.error {
+  text-align: center;
+  padding: 40px;
+  color: var(--white);
+  background: var(--primary-pink);
+  border-radius: 12px;
+  border: none;
+  margin: 20px 0;
+  box-shadow: var(--shadow);
+}
+
+/* Animation for accordion */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.category-details {
+  animation: slideDown 0.3s ease-out;
+}

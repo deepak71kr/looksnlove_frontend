@@ -1,0 +1,15 @@
+.inputWhite {
+  background-color: white !important;
+}
+
+.inputWhite::placeholder {
+  color: #4a5568 !important;
+  opacity: 0.8 !important;
+}
+
+/* For better visibility of placeholder text */
+input::placeholder {
+  color: #4a5568 !important;
+  opacity: 0.8 !important;
+  font-size: 0.95rem;
+}
