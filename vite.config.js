@@ -15,9 +15,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_API_URL || 'https://looksnlove-backend.onrender.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       }
     }
   },
