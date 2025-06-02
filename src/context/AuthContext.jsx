@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get('/api/auth/check');
+        const response = await axios.get('/api/auth/check-auth');
         console.log('Auth check response:', response.data);
         
         if (response.data.success && response.data.isAuthenticated) {
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       console.log('Attempting login for:', email);
 
-      const response = await axios.post('/api/auth/login', 
+      const response = await axios.post('/api/user/login', 
         { email, password },
         {
           withCredentials: true,
