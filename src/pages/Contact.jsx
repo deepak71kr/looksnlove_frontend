@@ -1,7 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from '../styles/input.module.css';
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission
+    console.log(formData);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 bg-primary/20 min-h-screen">
       <h1 className="text-3xl font-bold mb-8 text-primary">Contact Us</h1>

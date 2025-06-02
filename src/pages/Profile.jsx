@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Package, User, Mail, Phone, MapPin, Edit2 } from 'lucide-react';
-import styles from '../styles/input.module.css';
+import styles from '../styles/inputStyles.module.css';
 
 const Profile = () => {
   const { user, isAuthenticated } = useAuth();

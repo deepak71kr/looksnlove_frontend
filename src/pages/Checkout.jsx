@@ -6,7 +6,7 @@ import { ShoppingBag, ArrowLeft, MapPin, Phone, Mail, MessageSquare, Calendar, C
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from 'axios';
-import styles from '../styles/input.module.css';
+import styles from '../styles/inputStyles.module.css';
 
 // Helper to get today's date as a JS Date object
 function getTodayDateObj() {
