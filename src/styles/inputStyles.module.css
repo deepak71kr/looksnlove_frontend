@@ -1,0 +1,22 @@
+.inputWhite {
+  background-color: white !important;
+  color: #1f2937 !important; /* text-gray-800 */
+}
+
+.inputWhite::placeholder {
+  color: #4b5563 !important; /* text-gray-600 */
+  opacity: 0.8 !important;
+}
+
+.inputWhite:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 2px #ec4899; /* ring-pink-500 */
+}
+
+/* For better visibility of placeholder text */
+input::placeholder {
+  color: #4b5563 !important; /* text-gray-600 */
+  opacity: 0.8 !important;
+  font-size: 0.95rem;
+} 
