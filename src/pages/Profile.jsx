@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Package, User, Mail, Phone, MapPin, Edit2 } from 'lucide-react';
+import styles from '../styles/input.module.css';
 
 const Profile = () => {
   const { user, isAuthenticated } = useAuth();
@@ -135,7 +136,7 @@ const Profile = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 ${styles.inputWhite}`}
                 />
               </div>
               <div>
@@ -145,7 +146,7 @@ const Profile = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 ${styles.inputWhite}`}
                 />
               </div>
               <div>
@@ -155,7 +156,7 @@ const Profile = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 ${styles.inputWhite}`}
                 />
               </div>
               <div>
@@ -165,7 +166,7 @@ const Profile = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 ${styles.inputWhite}`}
                 />
               </div>
               <div className="flex justify-end space-x-4">
