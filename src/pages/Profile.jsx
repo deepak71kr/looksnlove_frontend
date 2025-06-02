@@ -28,7 +28,7 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/users/profile', {
+      const response = await axios.get('/api/users/profile', {
         withCredentials: true
       });
       const userData = response.data;
@@ -61,7 +61,7 @@ const Profile = () => {
       setError("");
       setSuccess("");
 
-      const response = await axios.put('http://localhost:5000/api/users/profile', formData, {
+      const response = await axios.put('/api/users/profile', formData, {
         withCredentials: true
       });
 

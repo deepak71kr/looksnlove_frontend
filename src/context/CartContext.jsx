@@ -21,7 +21,7 @@ export const CartProvider = ({ children }) => {
 
   // Configure axios defaults
   axios.defaults.withCredentials = true;
-  axios.defaults.baseURL = 'http://localhost:5000';
+  axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   axios.defaults.headers.common['Content-Type'] = 'application/json';
 
   const fetchCartItems = async () => {

@@ -33,7 +33,7 @@ const OrderHistory = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:5000/api/orders', {
+      const response = await axios.get('/api/orders', {
         withCredentials: true
       });
       
@@ -53,7 +53,7 @@ const OrderHistory = () => {
 
   const handleCancelOrder = async (orderId) => {
     try {
-      await axios.patch(`http://localhost:5000/api/orders/${orderId}/cancel`, {}, {
+      await axios.patch(`/api/orders/${orderId}/cancel`, {}, {
         withCredentials: true
       });
       
@@ -75,7 +75,7 @@ const OrderHistory = () => {
   const handleUpdateDeliveryDate = async () => {
     try {
       await axios.patch(
-        `http://localhost:5000/api/orders/${selectedOrder._id}/delivery-date`,
+        `/api/orders/${selectedOrder._id}/delivery-date`,
         { deliveryDate: newDeliveryDate },
         { withCredentials: true }
       );

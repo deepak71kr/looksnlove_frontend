@@ -46,7 +46,7 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:5000/api/contact/admin', {
+      const response = await axios.get('/api/contact/admin', {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:5000/api/orders/admin', {
+      const response = await axios.get('/api/orders/admin', {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
@@ -170,7 +170,7 @@ const AdminDashboard = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const response = await axios.patch(
-        `http://localhost:5000/api/orders/${orderId}/status`,
+        `/api/orders/${orderId}/status`,
         { status: newStatus },
         {
           withCredentials: true,
@@ -230,7 +230,7 @@ const AdminDashboard = () => {
   const handleAppointmentComplete = async (appointmentId) => {
     try {
       const response = await axios.patch(
-        `http://localhost:5000/api/contact/${appointmentId}/status`,
+        `/api/contact/${appointmentId}/status`,
         { status: 'confirmed' },
         {
           withCredentials: true,

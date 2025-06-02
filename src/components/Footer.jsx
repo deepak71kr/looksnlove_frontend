@@ -76,7 +76,7 @@ const Footer = () => {
       time: deliveryTime,
     };
     try {
-      await axios.post("http://localhost:5000/api/contact", data);
+      await axios.post("/api/contact", data);
       setShowSuccessDialog(true);
       setForm({ name: "", phone: "", message: "" });
       setDeliveryDate(getTodayDateObj());

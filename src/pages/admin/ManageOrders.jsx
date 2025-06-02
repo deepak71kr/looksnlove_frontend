@@ -25,7 +25,7 @@ const ManageOrders = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/categories', {
+      const response = await axios.get('/api/categories', {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
@@ -45,7 +45,7 @@ const ManageOrders = () => {
     if (!newCategory.trim()) return;
 
     try {
-      const response = await axios.post('http://localhost:5000/api/categories', 
+      const response = await axios.post('/api/categories', 
         { name: newCategory.trim() },
         {
           withCredentials: true,
@@ -67,7 +67,7 @@ const ManageOrders = () => {
     if (!window.confirm('Are you sure you want to delete this category and all its services?')) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/categories/${categoryId}`, {
+      await axios.delete(`/api/categories/${categoryId}`, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
@@ -85,7 +85,7 @@ const ManageOrders = () => {
       const { name, price, description } = serviceData;
       const validatedPrice = typeof price === 'number' && !isNaN(price) ? price : 0;
       const response = await axios.post(
-        `http://localhost:5000/api/categories/${categoryId}/services`,
+        `/api/categories/${categoryId}/services`,
         { name, price: validatedPrice, description },
         {
           withCredentials: true,
@@ -110,7 +110,7 @@ const ManageOrders = () => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/categories/${categoryId}/services/${serviceId}`,
+        `/api/categories/${categoryId}/services/${serviceId}`,
         {
           withCredentials: true,
           headers: {

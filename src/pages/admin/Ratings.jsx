@@ -34,7 +34,7 @@ const Ratings = () => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/home-stats', {
+      const response = await axios.get('/api/home-stats', {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
@@ -60,7 +60,7 @@ const Ratings = () => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.put('http://localhost:5000/api/home-stats', 
+      const response = await axios.put('/api/home-stats', 
         tempStats,
         {
           withCredentials: true,
