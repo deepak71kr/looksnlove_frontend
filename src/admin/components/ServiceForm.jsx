@@ -18,6 +18,8 @@ const inputStyle = {
   border: "1px solid #ccc",
   borderRadius: 4,
   fontSize: 16,
+  backgroundColor: "#ffffff",
+  color: "#000000"
 };
 
 const buttonStyle = {

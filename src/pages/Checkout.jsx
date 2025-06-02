@@ -6,7 +6,6 @@ import { ShoppingBag, ArrowLeft, MapPin, Phone, Mail, MessageSquare, Calendar, C
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from 'axios';
-import styles from '../styles/inputStyles.module.css';
 
 // Helper to get today's date as a JS Date object
 function getTodayDateObj() {
@@ -204,7 +203,7 @@ const Checkout = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors ${styles.inputWhite}`}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white text-gray-800"
                         placeholder="Enter your full name"
                       />
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -219,7 +218,7 @@ const Checkout = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors ${styles.inputWhite}`}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white text-gray-800"
                         placeholder="Enter your email"
                       />
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -238,7 +237,7 @@ const Checkout = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         required
-                        className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors ${styles.inputWhite}`}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white text-gray-800"
                         placeholder="Enter your phone number"
                       />
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -253,7 +252,7 @@ const Checkout = () => {
                         value={formData.address}
                         onChange={handleInputChange}
                         required
-                        className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors ${styles.inputWhite}`}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white text-gray-800"
                         placeholder="Enter your address"
                       />
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -281,7 +280,7 @@ const Checkout = () => {
                         value={formData.pincode}
                         onChange={handleInputChange}
                         required
-                        className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors ${styles.inputWhite}`}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white text-gray-800"
                         placeholder="Enter PIN code"
                       />
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -295,7 +294,7 @@ const Checkout = () => {
                         onChange={(date) => setDeliveryDate(date)}
                         minDate={getTodayDateObj()}
                         dateFormat="dd/MM/yyyy"
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white text-gray-800"
                         calendarClassName="text-black"
                         popperPlacement="bottom"
                         placeholderText="Select Delivery Date"
@@ -310,7 +309,7 @@ const Checkout = () => {
                         value={deliveryTime}
                         onChange={(e) => setDeliveryTime(e.target.value)}
                         required
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors appearance-none"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white text-gray-800 appearance-none"
                       >
                         {timeSlots.map((slot) => (
                           <option key={slot} value={slot}>
@@ -336,7 +335,7 @@ const Checkout = () => {
                       value={formData.message}
                       onChange={handleInputChange}
                       placeholder="Any special instructions or requirements"
-                      className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors h-24 resize-none ${styles.inputWhite}`}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors h-24 resize-none bg-white text-gray-800"
                     />
                     <MessageSquare className="absolute left-3 top-3 text-gray-400" size={18} />
                   </div>
