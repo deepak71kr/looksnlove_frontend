@@ -42,7 +42,10 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.get('/api/cart', {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       console.log('Cart API response:', response.data);
       setCartItems(response.data.items || []);
@@ -85,7 +88,10 @@ export const CartProvider = ({ children }) => {
       const response = await axios.post('/api/cart/add', 
         serviceData,
         {
-          withCredentials: true
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
       );
       
@@ -130,7 +136,10 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.delete(`/api/cart/remove/${itemId}`, {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
       console.log('Remove from cart API response:', response.data);
@@ -166,7 +175,10 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       await axios.delete('/api/cart/clear', {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       setCartItems([]);
     } catch (error) {

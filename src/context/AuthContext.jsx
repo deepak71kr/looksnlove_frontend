@@ -46,26 +46,21 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get('/api/auth/check-auth');
+        const response = await axios.get('/api/auth/check-auth', {
+          withCredentials: true
+        });
         console.log('Auth check response:', response.data);
-        
         if (response.data.success && response.data.isAuthenticated) {
-          const userData = response.data.user;
-          setUser(userData);
-          setStoredUser(userData);
           setIsAuthenticated(true);
+          setUser(response.data.user);
         } else {
-          // Only redirect to login if not on login or signup pages
-          if (!['/login', '/signup'].includes(window.location.pathname)) {
-            handleLogout();
-          }
+          setIsAuthenticated(false);
+          setUser(null);
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        // Only redirect to login if not on login or signup pages
-        if (!['/login', '/signup'].includes(window.location.pathname)) {
-          handleLogout();
-        }
+        setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setLoading(false);
       }
