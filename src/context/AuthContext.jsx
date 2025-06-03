@@ -41,6 +41,19 @@ export const AuthProvider = ({ children }) => {
   axios.defaults.withCredentials = true;
   axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   axios.defaults.headers.common['Content-Type'] = 'application/json';
+  axios.defaults.headers.common['Accept'] = 'application/json';
+  axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+  // Add response interceptor for better error handling
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 401) {
+        handleLogout();
+      }
+      return Promise.reject(error);
+    }
+  );
 
   // Check authentication status on mount and token expiration
   useEffect(() => {
