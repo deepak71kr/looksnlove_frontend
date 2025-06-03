@@ -66,20 +66,29 @@ export const AuthProvider = ({ children }) => {
         if (response.data.success && response.data.isAuthenticated) {
           setIsAuthenticated(true);
           setUser(response.data.user);
+          setStoredUser(response.data.user); // Store user data in localStorage
         } else {
           setIsAuthenticated(false);
           setUser(null);
+          setStoredUser(null);
         }
       } catch (error) {
         console.error('Auth check error:', error);
         setIsAuthenticated(false);
         setUser(null);
+        setStoredUser(null);
       } finally {
         setLoading(false);
       }
     };
 
+    // Check auth immediately
     checkAuth();
+
+    // Set up periodic auth check
+    const authCheckInterval = setInterval(checkAuth, 5 * 60 * 1000); // Check every 5 minutes
+
+    return () => clearInterval(authCheckInterval);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -113,8 +122,18 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
         setStoredUser(userData);
         setIsAuthenticated(true);
-        navigate('/');
-        return true;
+        
+        // Immediately check auth status after login
+        const authCheck = await axios.get('/api/auth/check-auth', {
+          withCredentials: true
+        });
+        
+        if (authCheck.data.success && authCheck.data.isAuthenticated) {
+          navigate('/');
+          return true;
+        } else {
+          throw new Error('Authentication failed after login');
+        }
       }
       throw new Error(response.data.message || 'Login failed. Please try again.');
     } catch (error) {
