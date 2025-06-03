@@ -21,14 +21,15 @@ export default defineConfig({
       }
     }
   },
-  base: '/',
-  headers: {
-    source: '/:path*',
-    headers: [
-      {
-        key: 'Content-Security-Policy',
-        value: "font-src 'self' *.vercel.com *.gstatic.com vercel.live data:;"
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
       }
-    ]
-  }
+    }
+  },
+  base: '/'
 })
