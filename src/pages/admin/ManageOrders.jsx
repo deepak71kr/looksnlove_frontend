@@ -174,7 +174,7 @@ const ManageOrders = () => {
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
                 placeholder="Category Name"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 mb-4"
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 mb-4 bg-white text-gray-800"
                 required
               />
               <div className="flex justify-end gap-2">
@@ -277,7 +277,7 @@ const ManageOrders = () => {
                     type="text"
                     name="name"
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-800"
                   />
                 </div>
                 <div>
@@ -287,7 +287,7 @@ const ManageOrders = () => {
                   <textarea
                     name="description"
                     rows={2}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-800"
                     placeholder="Enter a short description for this service"
                   />
                 </div>
@@ -301,7 +301,7 @@ const ManageOrders = () => {
                     required
                     min="0"
                     step="0.01"
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-800"
                   />
                 </div>
               </div>

@@ -54,7 +54,9 @@ const CategoryForm = ({ onCategoryAdded }) => {
           padding: '0.5em',
           borderRadius: 4,
           border: '1px solid #ccc',
-          marginRight: 8
+          marginRight: 8,
+          backgroundColor: '#ffffff',
+          color: '#000000'
         }}
         autoFocus
       />
