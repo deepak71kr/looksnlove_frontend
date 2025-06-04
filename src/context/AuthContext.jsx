@@ -58,24 +58,32 @@ export const AuthProvider = ({ children }) => {
 
   // Check authentication status on mount and token expiration
   useEffect(() => {
+    let isMounted = true;
+    
     const checkAuth = async () => {
       try {
         const response = await axios.get('/api/user/check-auth', {
           withCredentials: true
         });
         
-        if (response.data.success && response.data.isAuthenticated) {
-          setIsAuthenticated(true);
-          setUser(response.data.user);
-          setStoredUser(response.data.user);
-        } else {
-          handleLogout();
+        if (isMounted) {
+          if (response.data.success && response.data.isAuthenticated) {
+            setIsAuthenticated(true);
+            setUser(response.data.user);
+            setStoredUser(response.data.user);
+          } else {
+            handleLogout();
+          }
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        handleLogout();
+        if (isMounted) {
+          handleLogout();
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -85,7 +93,10 @@ export const AuthProvider = ({ children }) => {
     // Set up periodic auth check
     const authCheckInterval = setInterval(checkAuth, 5 * 60 * 1000); // Check every 5 minutes
 
-    return () => clearInterval(authCheckInterval);
+    return () => {
+      isMounted = false;
+      clearInterval(authCheckInterval);
+    };
   }, [navigate]);
 
   const handleLogout = () => {
@@ -117,8 +128,23 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
         setStoredUser(userData);
         setIsAuthenticated(true);
-        navigate('/');
-        return true;
+        
+        // Verify the authentication immediately after login
+        try {
+          const authCheck = await axios.get('/api/user/check-auth', {
+            withCredentials: true
+          });
+          
+          if (authCheck.data.success && authCheck.data.isAuthenticated) {
+            navigate('/');
+            return true;
+          } else {
+            throw new Error('Authentication verification failed');
+          }
+        } catch (authError) {
+          console.error('Auth verification error:', authError);
+          throw new Error('Failed to verify authentication');
+        }
       }
       throw new Error(response.data.message || 'Login failed. Please try again.');
     } catch (error) {
