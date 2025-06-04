@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }) => {
   axios.interceptors.response.use(
     (response) => response,
     (error) => {
+      console.error('API Error:', error.response?.data || error.message);
       if (error.response?.status === 401) {
         handleLogout();
       }
@@ -59,24 +60,20 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get('/api/auth/check-auth', {
+        const response = await axios.get('/api/user/check-auth', {
           withCredentials: true
         });
-        console.log('Auth check response:', response.data);
+        
         if (response.data.success && response.data.isAuthenticated) {
           setIsAuthenticated(true);
           setUser(response.data.user);
-          setStoredUser(response.data.user); // Store user data in localStorage
+          setStoredUser(response.data.user);
         } else {
-          setIsAuthenticated(false);
-          setUser(null);
-          setStoredUser(null);
+          handleLogout();
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        setIsAuthenticated(false);
-        setUser(null);
-        setStoredUser(null);
+        handleLogout();
       } finally {
         setLoading(false);
       }
@@ -115,25 +112,13 @@ export const AuthProvider = ({ children }) => {
         }
       );
       
-      console.log('Login response:', response.data);
-      
       if (response.data.success && response.data.user) {
         const userData = response.data.user;
         setUser(userData);
         setStoredUser(userData);
         setIsAuthenticated(true);
-        
-        // Immediately check auth status after login
-        const authCheck = await axios.get('/api/auth/check-auth', {
-          withCredentials: true
-        });
-        
-        if (authCheck.data.success && authCheck.data.isAuthenticated) {
-          navigate('/');
-          return true;
-        } else {
-          throw new Error('Authentication failed after login');
-        }
+        navigate('/');
+        return true;
       }
       throw new Error(response.data.message || 'Login failed. Please try again.');
     } catch (error) {
@@ -192,7 +177,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post('/api/auth/logout', {}, {
+      await axios.post('/api/user/logout', {}, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
