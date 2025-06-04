@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }) => {
   axios.defaults.headers.common['Content-Type'] = 'application/json';
   axios.defaults.headers.common['Accept'] = 'application/json';
   axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+  axios.defaults.withCredentials = true;
 
   // Add response interceptor for better error handling
   axios.interceptors.response.use(
@@ -50,7 +51,11 @@ export const AuthProvider = ({ children }) => {
     (error) => {
       console.error('API Error:', error.response?.data || error.message);
       if (error.response?.status === 401) {
-        handleLogout();
+        // Only logout if we're not on a public route
+        const publicRoutes = ['/', '/services', '/about-us', '/contact', '/login', '/signup'];
+        if (!publicRoutes.includes(window.location.pathname)) {
+          handleLogout();
+        }
       }
       return Promise.reject(error);
     }
