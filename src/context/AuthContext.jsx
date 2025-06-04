@@ -72,13 +72,21 @@ export const AuthProvider = ({ children }) => {
             setUser(response.data.user);
             setStoredUser(response.data.user);
           } else {
-            handleLogout();
+            // Only logout if we're not on a public route
+            const publicRoutes = ['/', '/services', '/about-us', '/contact', '/login', '/signup'];
+            if (!publicRoutes.includes(window.location.pathname)) {
+              handleLogout();
+            }
           }
         }
       } catch (error) {
         console.error('Auth check error:', error);
         if (isMounted) {
-          handleLogout();
+          // Only logout if we're not on a public route
+          const publicRoutes = ['/', '/services', '/about-us', '/contact', '/login', '/signup'];
+          if (!publicRoutes.includes(window.location.pathname)) {
+            handleLogout();
+          }
         }
       } finally {
         if (isMounted) {
@@ -103,7 +111,9 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setStoredUser(null);
     setIsAuthenticated(false);
-    if (window.location.pathname !== '/login') {
+    // Only navigate to login if we're not already on a public route
+    const publicRoutes = ['/', '/services', '/about-us', '/contact', '/login', '/signup'];
+    if (!publicRoutes.includes(window.location.pathname)) {
       navigate('/login');
     }
   };
@@ -128,23 +138,8 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
         setStoredUser(userData);
         setIsAuthenticated(true);
-        
-        // Verify the authentication immediately after login
-        try {
-          const authCheck = await axios.get('/api/user/check-auth', {
-            withCredentials: true
-          });
-          
-          if (authCheck.data.success && authCheck.data.isAuthenticated) {
-            navigate('/');
-            return true;
-          } else {
-            throw new Error('Authentication verification failed');
-          }
-        } catch (authError) {
-          console.error('Auth verification error:', authError);
-          throw new Error('Failed to verify authentication');
-        }
+        navigate('/');
+        return true;
       }
       throw new Error(response.data.message || 'Login failed. Please try again.');
     } catch (error) {
