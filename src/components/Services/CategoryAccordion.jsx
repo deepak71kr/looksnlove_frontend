@@ -76,7 +76,7 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
 
   const handleAddToCart = async (service) => {
     try {
-      setLoadingItems(prev => ({ ...prev, [serviceIndex]: true }));
+      setLoadingItems(prev => ({ ...prev, [service._id]: true }));
       
       const success = await addToCart(service);
       if (success) {
@@ -112,7 +112,7 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
         notification.remove();
       }, 2000);
     } finally {
-      setLoadingItems(prev => ({ ...prev, [serviceIndex]: false }));
+      setLoadingItems(prev => ({ ...prev, [service._id]: false }));
     }
   };
 
@@ -216,10 +216,10 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
                         </div>
                         <button
                           onClick={() => handleAddToCart(service)}
-                          disabled={loadingItems[serviceIndex]}
+                          disabled={loadingItems[service._id]}
                           className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-all duration-700 transform hover:scale-105 hover:shadow-md text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                         >
-                          {loadingItems[serviceIndex] ? (
+                          {loadingItems[service._id] ? (
                             <Loader2 className="animate-spin" size={20} />
                           ) : (
                             'Add to Cart'
