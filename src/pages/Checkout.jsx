@@ -82,6 +82,17 @@ const Checkout = () => {
       // Format the delivery date to ISO string
       const formattedDate = deliveryDate.toISOString();
 
+      // Validate required fields
+      if (!formData.name || !formData.phone || !formData.address || !formData.pincode) {
+        setError('Please fill in all required fields');
+        return;
+      }
+
+      if (!cartItems.length) {
+        setError('Your cart is empty');
+        return;
+      }
+
       const orderData = {
         customerDetails: {
           name: formData.name,
@@ -90,7 +101,7 @@ const Checkout = () => {
           pincode: formData.pincode
         },
         items: cartItems.map(item => ({
-          serviceName: item.serviceName || item.name,
+          serviceName: item.name || item.serviceName,
           category: item.category,
           price: item.price
         })),

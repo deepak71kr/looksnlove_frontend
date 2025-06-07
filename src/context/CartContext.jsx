@@ -89,7 +89,13 @@ export const CartProvider = ({ children }) => {
       );
       
       if (response.data.success && response.data.data.items) {
-        setCartItems(response.data.data.items);
+        setCartItems(response.data.data.items.map(item => ({
+          _id: item.product._id,
+          name: item.product.name,
+          price: item.product.price,
+          images: item.product.images,
+          quantity: item.quantity
+        })));
         return true;
       }
       throw new Error('Invalid response from server');
