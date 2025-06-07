@@ -21,9 +21,29 @@ export const CartProvider = ({ children }) => {
 
   // Configure axios defaults
   axios.defaults.withCredentials = true;
-  axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'https://looksnlove-backend.onrender.com';
   axios.defaults.headers.common['Content-Type'] = 'application/json';
   axios.defaults.headers.common['Accept'] = 'application/json';
+  axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+  // Add response interceptor to handle CORS errors
+  axios.interceptors.response.use(
+    response => response,
+    error => {
+      if (error.message === 'Network Error' && error.config) {
+        // Retry the request with updated headers
+        return axios({
+          ...error.config,
+          headers: {
+            ...error.config.headers,
+            'Access-Control-Allow-Origin': window.location.origin,
+            'Access-Control-Allow-Credentials': 'true'
+          }
+        });
+      }
+      return Promise.reject(error);
+    }
+  );
 
   const fetchCartItems = useCallback(async () => {
     if (!isAuthenticated || !user) {
