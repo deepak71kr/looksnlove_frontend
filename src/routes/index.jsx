@@ -12,13 +12,8 @@ import Services from '../pages/Services';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ForgotPassword from '../auth/ForgotPassword';
 import ResetPassword from '../auth/ResetPassword';
-<<<<<<< HEAD
-import Orders from '../components/Orders';
-import AdminDashboard from '../pages/AdminDashboard';
-=======
 import OrderHistory from '../pages/OrderHistory';
 import AdminDashboard from '../admin/AdminDashboard';
->>>>>>> e8a006f182eff1498daae3fdff89e9110b112031
 import AdminRoute from '../components/AdminRoute';
 import Ratings from '../pages/admin/Ratings';
 

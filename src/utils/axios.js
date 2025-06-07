@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+// Create a simple cache
+const cache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 // Create axios instance with default config
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
@@ -7,8 +11,70 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  }
+  },
+  credentials: 'include'
 });
+
+// Add request interceptor for caching
+api.interceptors.request.use(
+  (config) => {
+    // Don't cache POST, PUT, DELETE requests
+    if (['post', 'put', 'delete'].includes(config.method?.toLowerCase())) {
+      return config;
+    }
+
+    const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
+    const cachedResponse = cache.get(cacheKey);
+
+    if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_DURATION) {
+      // Return cached response
+      return Promise.reject({
+        __CACHE__: true,
+        data: cachedResponse.data
+      });
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for caching
+api.interceptors.response.use(
+  (response) => {
+    // Cache GET requests
+    if (response.config.method?.toLowerCase() === 'get') {
+      const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+      cache.set(cacheKey, {
+        data: response.data,
+        timestamp: Date.now()
+      });
+    }
+    return response;
+  },
+  (error) => {
+    // Handle cached responses
+    if (error.__CACHE__) {
+      return Promise.resolve({ data: error.data });
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Debounce function
+let debounceTimer;
+export const debounceRequest = (config) => {
+  return new Promise((resolve, reject) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      api(config)
+        .then(resolve)
+        .catch(reject);
+    }, 300); // 300ms debounce
+  });
+};
 
 // Add request interceptor for debugging
 api.interceptors.request.use(
@@ -22,6 +88,11 @@ api.interceptors.request.use(
       data: config.data,
       cookies: document.cookie // Log cookies being sent
     });
+
+    // Ensure credentials are included
+    config.withCredentials = true;
+    config.credentials = 'include';
+
     return config;
   },
   (error) => {

@@ -3,13 +3,13 @@ import { FaUser, FaPhone, FaEnvelope, FaCalendarAlt, FaClock, FaCheck, FaSync } 
 import Notification from '../common/Notification';
 
 const AppointmentsSection = ({ 
-  recentAppointments, 
-  loading, 
-  error, 
+  recentAppointments = [], 
+  loading = false, 
+  error = null, 
   handleRefresh, 
   handleAppointmentComplete,
-  formatDate,
-  formatTime 
+  formatDate = (date) => new Date(date).toLocaleDateString(),
+  formatTime = (time) => time
 }) => {
   const [notification, setNotification] = useState(null);
 
@@ -72,7 +72,7 @@ const AppointmentsSection = ({
         </div>
       ) : error ? (
         <div className="text-red-500 text-center p-4">{error}</div>
-      ) : recentAppointments.length === 0 ? (
+      ) : !recentAppointments || recentAppointments.length === 0 ? (
         <div className="text-gray-500 text-center p-4">No appointments found</div>
       ) : (
         <div className="max-h-[400px] overflow-y-auto pr-2">
@@ -85,11 +85,11 @@ const AppointmentsSection = ({
                 <div className="flex flex-col h-full">
                   <div className="flex items-center space-x-2 mb-2">
                     <FaUser className="text-pink-600" />
-                    <span className="font-medium">{appointment.name}</span>
+                    <span className="font-medium">{appointment.name || 'N/A'}</span>
                   </div>
                   <div className="flex items-center space-x-2 mb-2">
                     <FaPhone className="text-pink-600" />
-                    <span>{appointment.phone}</span>
+                    <span>{appointment.phone || 'N/A'}</span>
                   </div>
                   {appointment.email && (
                     <div className="flex items-center space-x-2 mb-2">
@@ -99,11 +99,11 @@ const AppointmentsSection = ({
                   )}
                   <div className="flex items-center space-x-2 mb-2">
                     <FaCalendarAlt className="text-pink-600" />
-                    <span>{formatDate(appointment.date)}</span>
+                    <span>{appointment.date ? formatDate(appointment.date) : 'N/A'}</span>
                   </div>
                   <div className="flex items-center space-x-2 mb-2">
                     <FaClock className="text-pink-600" />
-                    <span>{formatTime(appointment.timeSlot)}</span>
+                    <span>{appointment.timeSlot ? formatTime(appointment.timeSlot) : 'N/A'}</span>
                   </div>
                   {appointment.message && (
                     <div className="mt-2 text-gray-600 flex-grow">

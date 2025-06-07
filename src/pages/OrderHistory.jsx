@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../utils/axios';
 import { 
   Package, 
   Calendar, 
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 const OrderHistory = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,26 +26,50 @@ const OrderHistory = () => {
   const [newDeliveryDate, setNewDeliveryDate] = useState('');
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (isAuthenticated && user) {
+      fetchOrders();
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated, user]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('/api/orders', {
-        withCredentials: true
+      
+      console.log('Fetching orders with user:', {
+        userId: user?._id,
+        email: user?.email,
+        isAuthenticated
       });
       
-      // Sort orders by delivery date (most recent first)
-      const sortedOrders = response.data.sort((a, b) => 
-        new Date(b.deliveryDate) - new Date(a.deliveryDate)
-      );
+      const response = await api.get('/api/orders/my-orders');
       
-      setOrders(sortedOrders);
+      if (response.data.success) {
+        // Sort orders by delivery date (most recent first)
+        const sortedOrders = response.data.data.sort((a, b) => 
+          new Date(b.deliveryDate) - new Date(a.deliveryDate)
+        );
+        
+        setOrders(sortedOrders);
+      } else {
+        setError(response.data.message || 'Failed to fetch orders');
+      }
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      setError('Failed to fetch orders. Please try again.');
+      console.error('Error fetching orders:', {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+
+      if (error.response?.status === 401) {
+        setError('Please login to view your orders');
+      } else if (error.response?.status === 500) {
+        setError('Server error. Please try again later.');
+      } else {
+        setError(error.response?.data?.message || 'Failed to fetch orders. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -53,16 +77,18 @@ const OrderHistory = () => {
 
   const handleCancelOrder = async (orderId) => {
     try {
-      await axios.patch(`/api/orders/${orderId}/cancel`, {}, {
-        withCredentials: true
-      });
+      const response = await api.patch(`/api/orders/${orderId}/cancel`);
       
-      setOrders(orders.map(order => 
-        order._id === orderId ? { ...order, status: 'cancelled' } : order
-      ));
+      if (response.data.success) {
+        setOrders(orders.map(order => 
+          order._id === orderId ? { ...order, status: 'cancelled' } : order
+        ));
+      } else {
+        setError(response.data.message || 'Failed to cancel order');
+      }
     } catch (error) {
       console.error('Error cancelling order:', error);
-      setError('Failed to cancel order. Please try again.');
+      setError(error.response?.data?.message || 'Failed to cancel order. Please try again.');
     }
   };
 
@@ -74,7 +100,7 @@ const OrderHistory = () => {
 
   const handleUpdateDeliveryDate = async () => {
     try {
-      await axios.patch(
+      await api.patch(
         `/api/orders/${selectedOrder._id}/delivery-date`,
         { deliveryDate: newDeliveryDate },
         { withCredentials: true }
@@ -94,7 +120,7 @@ const OrderHistory = () => {
     }
   };
 
-  const toggleOrderExpand = (orderId) => {
+  const toggleOrder = (orderId) => {
     setExpandedOrders(prev => ({
       ...prev,
       [orderId]: !prev[orderId]
@@ -110,18 +136,73 @@ const OrderHistory = () => {
     });
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'ongoing':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'postponed':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Package className="mx-auto text-gray-400" size={64} />
+          <p className="mt-4 text-gray-600 text-lg">Please login to view your orders</p>
+          <button 
+            onClick={() => window.location.href = '/login'}
+            className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+          >
+            Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your orders...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-600">
-        {error}
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Package className="mx-auto text-red-400" size={64} />
+          <p className="mt-4 text-red-600 text-lg">{error}</p>
+          <button 
+            onClick={fetchOrders}
+            className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Package className="mx-auto text-gray-400" size={64} />
+          <p className="mt-4 text-gray-600 text-lg">No orders found</p>
+        </div>
       </div>
     );
   }
@@ -134,159 +215,69 @@ const OrderHistory = () => {
           <p className="text-gray-600">View and manage your orders</p>
         </div>
         
-        {orders.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow-md">
-            <Package className="mx-auto text-gray-400" size={64} />
-            <p className="mt-4 text-gray-600 text-lg">No orders found</p>
-            <p className="text-gray-500">Your order history will appear here</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <div key={order._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                {/* Order Header */}
-                <div 
-                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => toggleOrderExpand(order._id)}
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-4">
-                      <Package className="text-pink-500" size={24} />
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">Order #{order._id.slice(-6)}</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            order.status === 'ongoing' ? 'bg-purple-100 text-purple-800' :
-                            order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {formatDate(order.deliveryDate)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Total Amount</p>
-                        <p className="font-medium flex items-center justify-end">
-                          <IndianRupee className="text-gray-400 mr-1" size={16} />
-                          {order.total}
-                        </p>
-                      </div>
-                      {expandedOrders[order._id] ? (
-                        <ChevronUp className="text-gray-400" size={20} />
-                      ) : (
-                        <ChevronDown className="text-gray-400" size={20} />
-                      )}
-                    </div>
-                  </div>
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <div key={order._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div 
+                className="p-4 cursor-pointer flex justify-between items-center"
+                onClick={() => toggleOrder(order._id)}
+              >
+                <div>
+                  <p className="font-semibold">Order #{order._id.slice(-6)}</p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(order.deliveryDate).toLocaleDateString()}
+                  </p>
                 </div>
-
-                {/* Order Details */}
-                {expandedOrders[order._id] && (
-                  <div className="border-t p-4 space-y-4">
-                    {/* Customer Information */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-medium mb-3">Customer Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-start space-x-3">
-                          <MapPin className="text-gray-400 mt-1" size={20} />
-                          <div>
-                            <p className="text-sm text-gray-600">Delivery Address</p>
-                            <p className="font-medium">{order.customerDetails.address}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <Phone className="text-gray-400 mt-1" size={20} />
-                          <div>
-                            <p className="text-sm text-gray-600">Contact Number</p>
-                            <p className="font-medium">{order.customerDetails.phone}</p>
-                          </div>
-                        </div>
-                      </div>
+                <div className="flex items-center space-x-4">
+                  <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(order.status)}`}>
+                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  </span>
+                  {expandedOrders[order._id] ? <ChevronUp /> : <ChevronDown />}
+                </div>
+              </div>
+              
+              {expandedOrders[order._id] && (
+                <div className="border-t p-4">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Customer Details</h3>
+                      <p>Name: {order.customerDetails.name}</p>
+                      <p>Phone: {order.customerDetails.phone}</p>
+                      <p>Address: {order.customerDetails.address}</p>
+                      <p>PIN Code: {order.customerDetails.pincode}</p>
                     </div>
-
-                    {/* Service Details */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-medium mb-3">Service Details</h3>
-                      <div className="space-y-3">
+                    
+                    <div>
+                      <h3 className="font-semibold mb-2">Order Items</h3>
+                      <div className="space-y-2">
                         {order.items.map((item, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg">
-                            <div>
-                              <p className="font-medium">{item.serviceName}</p>
-                              <p className="text-sm text-gray-600">{item.category}</p>
-                            </div>
-                            <div className="flex items-center">
-                              <IndianRupee className="text-gray-400 mr-1" size={16} />
-                              <span className="font-medium">{item.price}</span>
-                            </div>
+                          <div key={index} className="flex justify-between">
+                            <span>{item.serviceName}</span>
+                            <span>₹{item.price}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-
-                    {/* Delivery Information */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-medium mb-3">Delivery Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-start space-x-3">
-                          <Calendar className="text-gray-400 mt-1" size={20} />
-                          <div>
-                            <p className="text-sm text-gray-600">Delivery Date</p>
-                            <p className="font-medium">{formatDate(order.deliveryDate)}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <Clock className="text-gray-400 mt-1" size={20} />
-                          <div>
-                            <p className="text-sm text-gray-600">Delivery Time</p>
-                            <p className="font-medium">{order.deliveryTime}</p>
-                          </div>
-                        </div>
+                    
+                    <div className="border-t pt-4">
+                      <div className="flex justify-between font-semibold">
+                        <span>Total</span>
+                        <span>₹{order.total}</span>
                       </div>
                     </div>
-
-                    {/* Additional Instructions */}
+                    
                     {order.additionalInstructions && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-medium mb-3 flex items-center">
-                          <MessageSquare className="mr-2" size={20} />
-                          Additional Instructions
-                        </h3>
-                        <p className="text-gray-700 whitespace-pre-wrap">
-                          {order.additionalInstructions}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Action Buttons */}
-                    {order.status === 'ongoing' && (
-                      <div className="flex justify-end space-x-4">
-                        <button
-                          onClick={() => handleEditDeliveryDate(order)}
-                          className="flex items-center px-4 py-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-colors"
-                        >
-                          <Edit2 size={20} className="mr-2" />
-                          Edit Delivery Date
-                        </button>
-                        <button
-                          onClick={() => handleCancelOrder(order._id)}
-                          className="flex items-center px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                        >
-                          <X size={20} className="mr-2" />
-                          Cancel Order
-                        </button>
+                      <div className="border-t pt-4">
+                        <h3 className="font-semibold mb-2">Additional Instructions</h3>
+                        <p className="text-gray-600">{order.additionalInstructions}</p>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
 
         {/* Edit Delivery Date Modal */}
         {isEditing && selectedOrder && (

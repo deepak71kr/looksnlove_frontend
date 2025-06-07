@@ -55,6 +55,12 @@ const AdminDashboard = () => {
           'Content-Type': 'application/json'
         }
       });
+      
+      if (!Array.isArray(response.data)) {
+        setError('Invalid response format from server');
+        return;
+      }
+      
       // Filter out hidden appointments and get the most recent 5
       const recent = response.data
         .filter(appointment => !appointment.hidden)
@@ -74,19 +80,19 @@ const AdminDashboard = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/orders/admin', {
+      const response = await axios.get('/api/orders', {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      if (!Array.isArray(response.data)) {
+      if (!response.data.success || !Array.isArray(response.data.data)) {
         setError('Invalid response format from server');
         return;
       }
       
-      const sortedOrders = response.data.sort((a, b) => {
+      const sortedOrders = response.data.data.sort((a, b) => {
         const statusPriority = {
           'postponed': 0,
           'ongoing': 1,
@@ -190,6 +196,10 @@ const AdminDashboard = () => {
         }
       );
       
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to update order status');
+      }
+      
       setOrders(orders.map(order => 
         order._id === orderId ? { ...order, status: newStatus } : order
       ));
@@ -213,6 +223,7 @@ const AdminDashboard = () => {
     } catch (error) {
       const errorMessage = error.response?.data?.message || 
                           error.response?.data?.error || 
+                          error.message ||
                           'Failed to update order status. Please try again.';
       setError(errorMessage);
       setTimeout(() => setError(null), 3000);
@@ -249,15 +260,21 @@ const AdminDashboard = () => {
         }
       );
       
-      if (response.data) {
-        // Remove the completed appointment from the list
-        setRecentAppointments(prev => 
-          prev.filter(appointment => appointment._id !== appointmentId)
-        );
+      // The backend returns the updated contact object directly
+      if (!response.data || !response.data._id) {
+        throw new Error('Invalid response from server');
       }
+      
+      // Remove the completed appointment from the list
+      setRecentAppointments(prev => 
+        prev.filter(appointment => appointment._id !== appointmentId)
+      );
     } catch (error) {
       console.error('Error completing appointment:', error);
-      setError(error.response?.data?.error || 'Failed to update appointment status. Please try again.');
+      setError(error.response?.data?.error || 
+               error.response?.data?.message || 
+               error.message ||
+               'Failed to update appointment status. Please try again.');
       setTimeout(() => setError(null), 3000);
     }
   };
@@ -272,7 +289,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        {error && (
+      {error && (
         <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-[1001]">
           <span className="block sm:inline">{error}</span>
           <button 
@@ -281,8 +298,8 @@ const AdminDashboard = () => {
           >
             <X size={20} />
           </button>
-          </div>
-        )}
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
@@ -319,9 +336,9 @@ const AdminDashboard = () => {
                 </div>
               </div>
             )}
-                </div>
-              </div>
-            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-4 sm:space-y-0">
@@ -336,7 +353,7 @@ const AdminDashboard = () => {
             <FaSync className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
-                </div>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
@@ -344,29 +361,29 @@ const AdminDashboard = () => {
               <div>
                 <p className="text-sm text-purple-600 font-medium">Ongoing</p>
                 <p className="text-xl sm:text-2xl font-bold text-purple-700">{statusCounts.ongoing}</p>
-                </div>
+              </div>
               <div className="bg-purple-100 p-2 rounded-full">
                 <Package className="text-purple-600" size={24} />
               </div>
             </div>
-                </div>
+          </div>
           <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-orange-600 font-medium">Postponed</p>
                 <p className="text-xl sm:text-2xl font-bold text-orange-700">{statusCounts.postponed}</p>
-                </div>
+              </div>
               <div className="bg-orange-100 p-2 rounded-full">
                 <Package className="text-orange-600" size={24} />
               </div>
             </div>
-                </div>
+          </div>
           <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-emerald-600 font-medium">Completed</p>
                 <p className="text-xl sm:text-2xl font-bold text-emerald-700">{statusCounts.completed}</p>
-                </div>
+              </div>
               <div className="bg-emerald-100 p-2 rounded-full">
                 <Package className="text-emerald-600" size={24} />
               </div>
@@ -413,12 +430,12 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                <button
+                        <button
                           onClick={() => handleViewDetails(order)} 
                           className="text-pink-600 hover:text-pink-900 font-medium"
-                >
+                        >
                           View Details
-                </button>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -430,209 +447,147 @@ const AdminDashboard = () => {
       </div>
 
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[1000]" data-aos="fade-up">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
-            <div className="sticky top-0 bg-white pb-4 border-b border-gray-200 z-10">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-800">Order Details</h2>
-              </div>
-            </div>
-
-            <div className="space-y-4 mt-4">
-              <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-3 text-pink-800 flex items-center">
-                  <FaUser className="mr-2" /> Customer Information
-                </h3>
-                <div className="space-y-2">
-                  <p className="flex items-center">
-                    <span className="font-medium w-24">Name:</span>
-                    <span className="text-gray-700">{selectedOrder.customerDetails.name}</span>
-                  </p>
-                  <p className="flex items-center">
-                    <span className="font-medium w-24">Phone:</span>
-                    <span className="text-gray-700">{selectedOrder.customerDetails.phone}</span>
-                  </p>
-                  <p className="flex items-center">
-                    <span className="font-medium w-24">Address:</span>
-                    <span className="text-gray-700">{selectedOrder.customerDetails.address}</span>
-                  </p>
-            </div>
-          </div>
-          
-              <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-3 text-pink-800 flex items-center">
-                  <FaShoppingCart className="mr-2" /> Order Items
-                </h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center pb-2 border-b border-pink-100">
-                    <p className="text-sm text-gray-600">Total Items: {selectedOrder.items.length}</p>
-                  </div>
-                  {selectedOrder.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center py-2 border-b border-pink-100 last:border-0">
-                      <div>
-                        <p className="font-medium text-gray-800">{item.serviceName}</p>
-                        <p className="text-sm text-gray-600">{item.category}</p>
-                      </div>
-                      <p className="font-medium text-pink-600">₹{item.price}</p>
-                    </div>
-                  ))}
-                  <div className="flex justify-between items-center pt-2 font-bold text-gray-800 border-t border-pink-100">
-                    <p>Total Amount</p>
-                    <p className="text-pink-600">₹{selectedOrder.total}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-3 text-pink-800 flex items-center">
-                  <FaCalendarAlt className="mr-2" /> Delivery Information
-                </h3>
-                <div className="space-y-2">
-                  <p className="flex items-center">
-                    <span className="font-medium w-24">Date:</span>
-                    <span className="text-gray-700">{new Date(selectedOrder.deliveryDate).toLocaleDateString()}</span>
-                  </p>
-                  <p className="flex items-center">
-                    <span className="font-medium w-24">Time:</span>
-                    <span className="text-gray-700">{selectedOrder.deliveryTime}</span>
-                  </p>
-                </div>
-              </div>
-
-              {selectedOrder.additionalInstructions && (
-                <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg">
-                  <h3 className="font-medium mb-3 text-pink-800 flex items-center">
-                    <FaEnvelope className="mr-2" /> Additional Instructions
-                  </h3>
-                  <p className="text-gray-700 whitespace-pre-wrap">{selectedOrder.additionalInstructions}</p>
-                </div>
-              )}
-
-              <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-3 text-pink-800 flex items-center">
-                  <FaSync className="mr-2" /> Status Management
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button
-                    onClick={() => handleStatusChange(selectedOrder._id, 'ongoing')}
-                    className={`p-3 rounded-lg text-center transition-all duration-200 ${
-                      selectedOrder.status === 'ongoing'
-                        ? 'bg-purple-600 text-white shadow-lg'
-                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
-                    }`}
-                  >
-                    Ongoing
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange(selectedOrder._id, 'postponed')}
-                    className={`p-3 rounded-lg text-center transition-all duration-200 ${
-                      selectedOrder.status === 'postponed'
-                        ? 'bg-orange-600 text-white shadow-lg'
-                        : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
-                    }`}
-                  >
-                    Postponed
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange(selectedOrder._id, 'completed')}
-                    className={`p-3 rounded-lg text-center transition-all duration-200 ${
-                      selectedOrder.status === 'completed'
-                        ? 'bg-emerald-600 text-white shadow-lg'
-                        : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
-                    }`}
-                  >
-                    Completed
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-center mt-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[1000]">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-semibold">Order Details</h3>
                 <button
                   onClick={handleCloseModal}
-                  className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full hover:from-pink-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold flex items-center gap-2"
+                  className="text-gray-500 hover:text-gray-700"
                 >
-                  <X size={20} />
-                  <span>Close</span>
+                  <X size={24} />
                 </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-3 text-pink-800 flex items-center">
+                    <FaUser className="mr-2" /> Customer Details
+                  </h3>
+                  <div className="space-y-2">
+                    <p className="text-gray-600">Name: {selectedOrder.customerDetails.name}</p>
+                    <p className="text-gray-600">Email: {selectedOrder.customerDetails.email}</p>
+                    <p className="text-gray-600">Phone: {selectedOrder.customerDetails.phone}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-3 text-pink-800 flex items-center">
+                    <FaShoppingCart className="mr-2" /> Order Items
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center pb-2 border-b border-pink-100">
+                      <p className="text-sm text-gray-600">Total Items: {selectedOrder.items.length}</p>
+                    </div>
+                    {selectedOrder.items.map((item, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 border-b border-pink-100 last:border-0">
+                        <div>
+                          <p className="font-medium text-gray-800">{item.serviceName}</p>
+                          <p className="text-sm text-gray-600">{item.category}</p>
+                        </div>
+                        <p className="font-medium text-pink-600">₹{item.price}</p>
+                      </div>
+                    ))}
+                    <div className="flex justify-between items-center pt-2 font-bold text-gray-800 border-t border-pink-100">
+                      <p>Total Amount</p>
+                      <p className="text-pink-600">₹{selectedOrder.total}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-3 text-pink-800 flex items-center">
+                    <FaCalendarAlt className="mr-2" /> Delivery Details
+                  </h3>
+                  <div className="space-y-2">
+                    <p className="text-gray-600">Date: {formatDate(selectedOrder.deliveryDate)}</p>
+                    <p className="text-gray-600">Time: {formatTime(selectedOrder.deliveryTime)}</p>
+                    <p className="text-gray-600">Address: {selectedOrder.deliveryAddress}</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-4">
+                  {selectedOrder.status !== 'completed' && (
+                    <>
+                      {selectedOrder.status !== 'postponed' && (
+                        <button
+                          onClick={() => handleStatusChange(selectedOrder._id, 'postponed')}
+                          className="px-4 py-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors duration-150"
+                        >
+                          Postpone
+                        </button>
+                      )}
+                      {selectedOrder.status !== 'ongoing' && (
+                        <button
+                          onClick={() => handleStatusChange(selectedOrder._id, 'ongoing')}
+                          className="px-4 py-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors duration-150"
+                        >
+                          Mark as Ongoing
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleStatusChange(selectedOrder._id, 'completed')}
+                        className="px-4 py-2 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200 transition-colors duration-150"
+                      >
+                        Mark as Completed
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 mt-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-800">Recent Appointments</h2>
-          <button
-            onClick={fetchRecentAppointments}
-            className="flex items-center space-x-2 px-4 py-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-colors duration-150"
-          >
-            <FaSync className="w-5 h-5" />
-            <span>Refresh</span>
-          </button>
-        </div>
-        
-        {loading ? (
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600"></div>
-          </div>
-        ) : error ? (
-          <div className="text-red-500 text-center p-4">{error}</div>
-        ) : recentAppointments.length === 0 ? (
-          <div className="text-gray-500 text-center p-4">No appointments found</div>
-        ) : (
-          <div className="max-h-[400px] overflow-y-auto pr-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recentAppointments.map((appointment) => (
-                <div
-                  key={appointment._id}
-                  className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
-                >
-                  <div className="flex flex-col h-full">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <FaUser className="text-pink-600" />
-                      <span className="font-medium">{appointment.name}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <FaPhone className="text-pink-600" />
-                      <span>{appointment.phone}</span>
-                    </div>
-                    {appointment.email && (
-                      <div className="flex items-center space-x-2 mb-2">
-                        <FaEnvelope className="text-pink-600" />
-                        <span className="text-sm">{appointment.email}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center space-x-2 mb-2">
-                      <FaCalendarAlt className="text-pink-600" />
-                      <span>{formatDate(appointment.date)}</span>
-                        </div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <FaClock className="text-pink-600" />
-                      <span>{formatTime(appointment.timeSlot)}</span>
-                        </div>
-                    {appointment.message && (
-                      <div className="mt-2 text-gray-600 flex-grow">
-                        <p className="font-medium">Message:</p>
-                        <p className="text-sm line-clamp-2">{appointment.message}</p>
-                      </div>
-                    )}
-                    <div className="mt-4 flex justify-end">
-                      <button
-                        onClick={() => handleAppointmentComplete(appointment._id)}
-                        className="px-4 py-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-colors duration-150 flex items-center space-x-2"
-                      >
-                        <FaCheck className="w-4 h-4" />
-                        <span>Mark as Completed</span>
-                      </button>
-                    </div>
+      {recentAppointments.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4">Recent Appointments</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentAppointments.map((appointment) => (
+              <div key={appointment._id} className="bg-white rounded-lg shadow-md p-4">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="font-medium text-gray-800">{appointment.name}</h3>
+                    <p className="text-sm text-gray-600">{appointment.email}</p>
                   </div>
+                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-pink-100 text-pink-800">
+                    New
+                  </span>
                 </div>
-              ))}
-            </div>
-            </div>
-          )}
-      </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    <FaPhone className="inline mr-2" />
+                    {appointment.phone}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <FaCalendarAlt className="inline mr-2" />
+                    {formatDate(appointment.date)}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <FaClock className="inline mr-2" />
+                    {formatTime(appointment.time)}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <FaInfoCircle className="inline mr-2" />
+                    {appointment.message}
+                  </p>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => handleAppointmentComplete(appointment._id)}
+                    className="px-4 py-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-colors duration-150 flex items-center space-x-2"
+                  >
+                    <FaCheck className="w-4 h-4" />
+                    <span>Mark as Completed</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

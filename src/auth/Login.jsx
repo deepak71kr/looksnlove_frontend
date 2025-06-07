@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import styles from "./Login.module.css"; // For white placeholder
 import { useAuth } from "../context/AuthContext";
@@ -88,8 +88,19 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the redirect path from location state or default to home
+  const from = location.state?.from?.pathname || "/";
+
+  useEffect(() => {
+    // If already authenticated, redirect to the intended destination
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,13 +112,13 @@ const Login = () => {
     try {
       setError('');
       setLoading(true);
-      
+
       const success = await login(email, password);
-      if (!success) {
-        setError('Invalid email or password');
+      if (success) {
+        // Navigate to the intended destination after successful login
+        navigate(from, { replace: true });
       }
     } catch (error) {
-      console.error('Login error:', error);
       if (error.response?.status === 401) {
         setError('Invalid email or password');
       } else if (error.response?.data?.message) {

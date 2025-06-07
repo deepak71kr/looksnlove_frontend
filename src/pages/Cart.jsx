@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -9,13 +9,25 @@ const Cart = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const handleCheckout = () => {
+  const handleCheckout = useCallback(() => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
     navigate('/checkout');
-  };
+  }, [isAuthenticated, navigate]);
+
+  const handleRemoveItem = useCallback((itemId) => {
+    removeFromCart(itemId);
+  }, [removeFromCart]);
+
+  const handleClearCart = useCallback(() => {
+    clearCart();
+  }, [clearCart]);
+
+  const handleContinueShopping = useCallback(() => {
+    navigate('/services');
+  }, [navigate]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', {
@@ -54,7 +66,7 @@ const Cart = () => {
               <h1 className="text-2xl font-bold">Shopping Cart</h1>
             </div>
             <button
-              onClick={() => navigate('/services')}
+              onClick={handleContinueShopping}
               className="flex items-center gap-2 text-gray-600 hover:text-pink-500 transition-colors"
             >
               <ArrowLeft size={20} />
@@ -68,7 +80,7 @@ const Cart = () => {
             <ShoppingBag className="mx-auto text-gray-400" size={48} />
             <p className="text-gray-600 mt-4 mb-6">Your cart is empty</p>
             <button
-              onClick={() => navigate('/services')}
+              onClick={handleContinueShopping}
               className="bg-pink-500 text-white px-8 py-3 rounded-md hover:bg-pink-600 transition-colors"
             >
               Browse Services
@@ -91,7 +103,7 @@ const Cart = () => {
                         <p className="text-lg font-semibold text-pink-600">{formatPrice(item.price)}</p>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item._id)}
+                        onClick={() => handleRemoveItem(item._id)}
                         className="mt-3 text-red-500 hover:text-red-700 text-sm py-1.5 px-3 border border-red-500 rounded-md hover:bg-red-50 transition-colors flex items-center justify-center gap-1"
                       >
                         <Trash2 size={14} />
@@ -127,7 +139,7 @@ const Cart = () => {
 
                   <div className="space-y-4 pt-4">
                     <button
-                      onClick={clearCart}
+                      onClick={handleClearCart}
                       className="w-full px-6 py-3 text-red-500 hover:text-red-700 border border-red-500 rounded-md hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
                     >
                       <Trash2 size={20} />

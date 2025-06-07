@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -24,12 +24,9 @@ export const CartProvider = ({ children }) => {
   axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   axios.defaults.headers.common['Content-Type'] = 'application/json';
 
-  const fetchCartItems = async () => {
-    console.log('Fetching cart, isAuthenticated:', isAuthenticated);
+  const fetchCartItems = useCallback(async () => {
     if (!isAuthenticated || !user) {
-      // Load from localStorage when not authenticated
       const savedCart = localStorage.getItem('cart');
-      console.log('Loading from localStorage (not authenticated):', savedCart);
       if (savedCart) {
         setCartItems(JSON.parse(savedCart));
       } else {
@@ -47,13 +44,9 @@ export const CartProvider = ({ children }) => {
           'Content-Type': 'application/json'
         }
       });
-      console.log('Cart API response:', response.data);
       setCartItems(response.data.items || []);
     } catch (error) {
-      console.error('Error fetching cart:', error);
-      // If API fails, try to load from localStorage
       const savedCart = localStorage.getItem('cart');
-      console.log('Loading from localStorage:', savedCart);
       if (savedCart) {
         setCartItems(JSON.parse(savedCart));
       } else {
@@ -62,22 +55,19 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     fetchCartItems();
-  }, [isAuthenticated, user]);
+  }, [fetchCartItems]);
 
-  // Save to localStorage when not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
-      console.log('Saving to localStorage:', cartItems);
       localStorage.setItem('cart', JSON.stringify(cartItems));
     }
   }, [cartItems, isAuthenticated]);
 
-  const addToCart = async (serviceData) => {
-    console.log('Adding to cart:', serviceData);
+  const addToCart = useCallback(async (serviceData) => {
     if (!isAuthenticated || !user) {
       navigate('/login');
       return false;
@@ -95,39 +85,28 @@ export const CartProvider = ({ children }) => {
         }
       );
       
-      console.log('Add to cart API response:', response.data);
       if (response.data.items) {
         setCartItems(response.data.items);
         return true;
-      } else {
-        throw new Error('Invalid response from server');
       }
+      throw new Error('Invalid response from server');
     } catch (error) {
-      console.error('Error adding to cart:', error);
       if (error.response?.status === 401) {
         navigate('/login');
         return false;
-      } else {
-        // Add to local cart as fallback
-        setCartItems(prevItems => {
-          const existingItem = prevItems.find(i => i._id === serviceData._id);
-          if (existingItem) {
-            console.log('Item already in cart');
-            return prevItems;
-          }
-          const newItems = [...prevItems, { ...serviceData, _id: Date.now().toString() }];
-          console.log('New cart items:', newItems);
-          return newItems;
-        });
-        return true;
       }
+      setCartItems(prevItems => {
+        const existingItem = prevItems.find(i => i._id === serviceData._id);
+        if (existingItem) return prevItems;
+        return [...prevItems, { ...serviceData, _id: Date.now().toString() }];
+      });
+      return true;
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated, user, navigate]);
 
-  const removeFromCart = async (itemId) => {
-    console.log('Removing from cart:', itemId);
+  const removeFromCart = useCallback(async (itemId) => {
     if (!isAuthenticated || !user) {
       navigate('/login');
       return;
@@ -142,31 +121,23 @@ export const CartProvider = ({ children }) => {
         }
       });
       
-      console.log('Remove from cart API response:', response.data);
       if (response.data.items) {
         setCartItems(response.data.items);
       } else {
         throw new Error('Invalid response from server');
       }
     } catch (error) {
-      console.error('Error removing from cart:', error);
       if (error.response?.status === 401) {
         navigate('/login');
       } else {
-        // Remove from local cart as fallback
-        setCartItems(prevItems => {
-          const newItems = prevItems.filter(item => item._id !== itemId);
-          console.log('New cart items after removal:', newItems);
-          return newItems;
-        });
+        setCartItems(prevItems => prevItems.filter(item => item._id !== itemId));
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated, user, navigate]);
 
-  const clearCart = async () => {
-    console.log('Clearing cart');
+  const clearCart = useCallback(async () => {
     if (!isAuthenticated || !user) {
       navigate('/login');
       return;
@@ -182,7 +153,6 @@ export const CartProvider = ({ children }) => {
       });
       setCartItems([]);
     } catch (error) {
-      console.error('Error clearing cart:', error);
       if (error.response?.status === 401) {
         navigate('/login');
       } else {
@@ -191,10 +161,9 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated, user, navigate]);
 
   const cartTotal = cartItems.reduce((sum, item) => sum + (item.price || 0), 0);
-  console.log('Current cart state:', { cartItems, cartTotal, loading });
 
   const value = {
     cartItems,

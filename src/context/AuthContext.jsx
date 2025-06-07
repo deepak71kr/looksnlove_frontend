@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,8 +32,8 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(getStoredUser());
-  const [isAuthenticated, setIsAuthenticated] = useState(!!getStoredUser());
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -43,92 +43,83 @@ export const AuthProvider = ({ children }) => {
   axios.defaults.headers.common['Content-Type'] = 'application/json';
   axios.defaults.headers.common['Accept'] = 'application/json';
   axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-  axios.defaults.withCredentials = true;
 
   // Add response interceptor for better error handling
-  axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      console.error('API Error:', error.response?.data || error.message);
-      if (error.response?.status === 401) {
-        // Only logout if we're not on a public route
-        const publicRoutes = ['/', '/services', '/about-us', '/contact', '/login', '/signup'];
-        if (!publicRoutes.includes(window.location.pathname)) {
-          handleLogout();
-        }
-      }
-      return Promise.reject(error);
-    }
-  );
-
-  // Check authentication status on mount and token expiration
   useEffect(() => {
-    let isMounted = true;
-    
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get('/api/user/check-auth', {
-          withCredentials: true
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        console.error('Axios error:', {
+          url: error.config?.url,
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
         });
-        
-        if (isMounted) {
-          if (response.data.success && response.data.isAuthenticated) {
-            setIsAuthenticated(true);
-            setUser(response.data.user);
-            setStoredUser(response.data.user);
-          } else {
-            // Only logout if we're not on a public route
-            const publicRoutes = ['/', '/services', '/about-us', '/contact', '/login', '/signup'];
-            if (!publicRoutes.includes(window.location.pathname)) {
-              handleLogout();
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
-        if (isMounted) {
+
+        if (error.response?.status === 401) {
           // Only logout if we're not on a public route
           const publicRoutes = ['/', '/services', '/about-us', '/contact', '/login', '/signup'];
           if (!publicRoutes.includes(window.location.pathname)) {
             handleLogout();
           }
         }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        return Promise.reject(error);
       }
-    };
-
-    // Check auth immediately
-    checkAuth();
-
-    // Set up periodic auth check
-    const authCheckInterval = setInterval(checkAuth, 5 * 60 * 1000); // Check every 5 minutes
+    );
 
     return () => {
-      isMounted = false;
-      clearInterval(authCheckInterval);
+      axios.interceptors.response.eject(interceptor);
     };
-  }, [navigate]);
+  }, []);
 
-  const handleLogout = () => {
+  const checkAuth = useCallback(async () => {
+    try {
+      console.log('Checking auth status...');
+      const response = await axios.get('/api/auth/check-auth', {
+        withCredentials: true
+      });
+      
+      console.log('Auth check response:', response.data);
+      
+      if (response.data.success && response.data.isAuthenticated) {
+        setIsAuthenticated(true);
+        setUser(response.data.user);
+        setStoredUser(response.data.user);
+      } else {
+        handleLogout();
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      handleLogout();
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  const handleLogout = useCallback(() => {
+    console.log('Handling logout...');
     setUser(null);
     setStoredUser(null);
     setIsAuthenticated(false);
+    // Clear any stored tokens or auth data
+    localStorage.removeItem('user');
     // Only navigate to login if we're not already on a public route
     const publicRoutes = ['/', '/services', '/about-us', '/contact', '/login', '/signup'];
     if (!publicRoutes.includes(window.location.pathname)) {
       navigate('/login');
     }
-  };
+  }, [navigate]);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
+      console.log('Attempting login...');
       setLoading(true);
-      console.log('Attempting login for:', email);
-
-      const response = await axios.post('/api/user/login', 
+      const response = await axios.post('/api/auth/login', 
         { email, password },
         {
           withCredentials: true,
@@ -137,6 +128,8 @@ export const AuthProvider = ({ children }) => {
           }
         }
       );
+      
+      console.log('Login response:', response.data);
       
       if (response.data.success && response.data.user) {
         const userData = response.data.user;
@@ -155,12 +148,13 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, handleLogout]);
 
-  const signup = async (userData) => {
+  const signup = useCallback(async (userData) => {
     try {
+      console.log('Attempting signup...');
       setLoading(true);
-      const response = await axios.post('/api/user/signup', 
+      const response = await axios.post('/api/auth/signup', 
         userData,
         {
           withCredentials: true,
@@ -170,9 +164,11 @@ export const AuthProvider = ({ children }) => {
         }
       );
       
+      console.log('Signup response:', response.data);
+      
       if (response.data.success) {
         // After successful signup, log the user in
-        const loginResponse = await axios.post('/api/user/login', 
+        const loginResponse = await axios.post('/api/auth/login', 
           { email: userData.email, password: userData.password },
           {
             withCredentials: true,
@@ -181,6 +177,8 @@ export const AuthProvider = ({ children }) => {
             }
           }
         );
+        
+        console.log('Auto-login response:', loginResponse.data);
         
         if (loginResponse.data.success && loginResponse.data.user) {
           const userData = loginResponse.data.user;
@@ -195,26 +193,27 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Signup error:', error);
       const errorMessage = error.response?.data?.message || 'Signup failed. Please try again.';
-      // Don't call handleLogout here as it forces navigation to login
       setLoading(false);
       throw new Error(errorMessage);
     }
-  };
+  }, [navigate]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
-      await axios.post('/api/user/logout', {}, {
+      console.log('Attempting logout...');
+      await axios.post('/api/auth/logout', {}, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
         }
       });
+      console.log('Logout successful');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       handleLogout();
     }
-  };
+  }, [handleLogout]);
 
   const value = {
     user,
@@ -222,7 +221,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     signup,
-    logout
+    logout,
+    checkAuth
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

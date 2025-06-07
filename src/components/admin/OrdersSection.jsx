@@ -4,10 +4,10 @@ import { FaSync } from 'react-icons/fa';
 import Notification from '../common/Notification';
 
 const OrdersSection = ({ 
-  orders, 
-  loading, 
-  error, 
-  statusCounts, 
+  orders = [], 
+  loading = false, 
+  error = null, 
+  statusCounts = { ongoing: 0, postponed: 0, completed: 0 }, 
   handleRefresh, 
   handleViewDetails 
 }) => {
@@ -54,7 +54,7 @@ const OrdersSection = ({
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-purple-600 font-medium">Ongoing</p>
-              <p className="text-xl sm:text-2xl font-bold text-purple-700">{statusCounts.ongoing}</p>
+              <p className="text-xl sm:text-2xl font-bold text-purple-700">{statusCounts?.ongoing || 0}</p>
             </div>
             <div className="bg-purple-100 p-2 rounded-full">
               <Package className="text-purple-600" size={24} />
@@ -65,7 +65,7 @@ const OrdersSection = ({
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-orange-600 font-medium">Postponed</p>
-              <p className="text-xl sm:text-2xl font-bold text-orange-700">{statusCounts.postponed}</p>
+              <p className="text-xl sm:text-2xl font-bold text-orange-700">{statusCounts?.postponed || 0}</p>
             </div>
             <div className="bg-orange-100 p-2 rounded-full">
               <Package className="text-orange-600" size={24} />
@@ -76,7 +76,7 @@ const OrdersSection = ({
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-emerald-600 font-medium">Completed</p>
-              <p className="text-xl sm:text-2xl font-bold text-emerald-700">{statusCounts.completed}</p>
+              <p className="text-xl sm:text-2xl font-bold text-emerald-700">{statusCounts?.completed || 0}</p>
             </div>
             <div className="bg-emerald-100 p-2 rounded-full">
               <Package className="text-emerald-600" size={24} />
@@ -89,7 +89,7 @@ const OrdersSection = ({
         <div className="text-center py-4">Loading orders...</div>
       ) : error ? (
         <div className="text-center py-4 text-red-600">{error}</div>
-      ) : orders.length === 0 ? (
+      ) : !orders || orders.length === 0 ? (
         <div className="text-center py-4 text-gray-500">No orders found</div>
       ) : (
         <div className="overflow-x-auto">
@@ -109,18 +109,18 @@ const OrdersSection = ({
                 {orders.map((order) => (
                   <tr key={order._id} className="hover:bg-gray-50">
                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap">#{order._id.slice(-6)}</td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">{order.customerDetails.name}</td>
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">{order.customerDetails?.name || 'N/A'}</td>
                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      {new Date(order.deliveryDate).toLocaleDateString()}
+                      {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : 'N/A'}
                     </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">₹{order.total}</td>
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">₹{order.total || 0}</td>
                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         order.status === 'ongoing' ? 'bg-purple-100 text-purple-800' :
                         order.status === 'postponed' ? 'bg-orange-100 text-orange-800' :
                         'bg-emerald-100 text-emerald-800'
                       }`}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'N/A'}
                       </span>
                     </td>
                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap">

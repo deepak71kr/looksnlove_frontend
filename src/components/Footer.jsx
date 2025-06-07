@@ -163,7 +163,7 @@ const Footer = () => {
 
         <div className="flex justify-end space-x-6 mb-6">
           <a
-            href="https://wa.me/919508387371"
+            href="https://wa.me/919065807555"
             target="_blank"
             rel="noopener noreferrer"
             className="text-2xl hover:text-green-500"
@@ -171,7 +171,7 @@ const Footer = () => {
             <FaWhatsapp />
           </a>
           <a
-            href="https://www.facebook.com/your-group"
+            href="https://www.facebook.com/profile.php?id=61576227413324&mibextid=ZbWKwL"
             target="_blank"
             rel="noopener noreferrer"
             className="text-2xl hover:text-blue-500"
@@ -179,7 +179,7 @@ const Footer = () => {
             <FaFacebook />
           </a>
           <a
-            href="https://www.instagram.com/your-profile"
+            href="https://www.instagram.com/looksnlove.co.in?utm_source=qr&igsh=aXpreWNtY29yY2No"
             target="_blank"
             rel="noopener noreferrer"
             className="text-2xl hover:text-pink-500"

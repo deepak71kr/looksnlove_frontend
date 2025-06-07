@@ -1,12 +1,12 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Home from './pages/Home';
 import Login from './auth/Login';
 import Signup from './auth/Signup';
 import Contact from './pages/Contact';
 import AboutUs from './pages/AboutUs';
-import AdminDashboard from './pages/AdminDashboard';
+import AdminDashboard from './admin/AdminDashboard';
 import AdminMessages from './pages/AdminMessages';
 import Profile from './pages/Profile';
 import Cart from './pages/Cart';
@@ -19,8 +19,8 @@ import CheckoutSuccess from './pages/CheckoutSuccess';
 import ManageOrders from './pages/admin/ManageOrders';
 import Appointments from './pages/admin/Appointments';
 
-// Protected route for cart and checkout
-const ProtectedCartRoute = ({ children }) => {
+// Public route that redirects to home if already authenticated
+const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
   if (loading) {
@@ -31,16 +31,17 @@ const ProtectedCartRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
 };
 
-// Protected route for admin pages
-const ProtectedAdminRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+// Protected route for authenticated users
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
   
   if (loading) {
     return (
@@ -50,8 +51,27 @@ const ProtectedAdminRoute = ({ children }) => {
     );
   }
 
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
+// Protected route for admin users
+const AdminRoute = ({ children }) => {
+  const { user, isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -65,70 +85,85 @@ const AppRoutes = () => {
       <Route path="/services" element={<Services />} />
       <Route path="/about-us" element={<AboutUs />} />
       <Route path="/contact" element={<Contact />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      
+      {/* Auth Routes */}
+      <Route path="/login" element={
+        <PublicRoute>
+          <Login />
+        </PublicRoute>
+      } />
+      <Route path="/signup" element={
+        <PublicRoute>
+          <Signup />
+        </PublicRoute>
+      } />
 
-      {/* Protected Cart Routes */}
+      {/* Protected User Routes */}
       <Route path="/cart" element={
-        <ProtectedCartRoute>
+        <ProtectedRoute>
           <Cart />
-        </ProtectedCartRoute>
+        </ProtectedRoute>
       } />
       <Route path="/checkout" element={
-        <ProtectedCartRoute>
+        <ProtectedRoute>
           <Checkout />
-        </ProtectedCartRoute>
+        </ProtectedRoute>
       } />
       <Route path="/checkout-success" element={
-        <ProtectedCartRoute>
+        <ProtectedRoute>
           <CheckoutSuccess />
-        </ProtectedCartRoute>
+        </ProtectedRoute>
       } />
       <Route path="/profile" element={
-        <ProtectedCartRoute>
+        <ProtectedRoute>
           <Profile />
-        </ProtectedCartRoute>
+        </ProtectedRoute>
+      } />
+      <Route path="/orders" element={
+        <ProtectedRoute>
+          <OrderHistory />
+        </ProtectedRoute>
       } />
       <Route path="/order-history" element={
-        <ProtectedCartRoute>
+        <ProtectedRoute>
           <OrderHistory />
-        </ProtectedCartRoute>
+        </ProtectedRoute>
       } />
 
       {/* Admin Routes */}
       <Route path="/admin" element={
-        <ProtectedAdminRoute>
+        <AdminRoute>
           <AdminDashboard />
-        </ProtectedAdminRoute>
+        </AdminRoute>
       } />
       <Route path="/admin/messages" element={
-        <ProtectedAdminRoute>
+        <AdminRoute>
           <AdminMessages />
-        </ProtectedAdminRoute>
+        </AdminRoute>
       } />
       <Route path="/admin/ratings" element={
-        <ProtectedAdminRoute>
+        <AdminRoute>
           <Ratings />
-        </ProtectedAdminRoute>
+        </AdminRoute>
       } />
       <Route path="/admin/discounts" element={
-        <ProtectedAdminRoute>
+        <AdminRoute>
           <Discounts />
-        </ProtectedAdminRoute>
+        </AdminRoute>
       } />
       <Route path="/admin/orders" element={
-        <ProtectedAdminRoute>
+        <AdminRoute>
           <ManageOrders />
-        </ProtectedAdminRoute>
+        </AdminRoute>
       } />
       <Route path="/admin/appointments" element={
-        <ProtectedAdminRoute>
+        <AdminRoute>
           <Appointments />
-        </ProtectedAdminRoute>
+        </AdminRoute>
       } />
 
       {/* Catch all route */}
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
