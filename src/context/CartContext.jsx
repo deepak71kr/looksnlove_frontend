@@ -107,7 +107,8 @@ export const CartProvider = ({ children }) => {
       console.log('Adding to cart:', {
         serviceData,
         userId: user._id,
-        isAuthenticated
+        isAuthenticated,
+        apiUrl: import.meta.env.VITE_API_URL
       });
 
       // Ensure we have a valid service ID
@@ -119,8 +120,15 @@ export const CartProvider = ({ children }) => {
       const response = await api.post('/cart/add', {
         serviceId: serviceData._id,
         quantity: 1
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
       });
       
+      console.log('Add to cart response:', response.data);
+
       if (response.data.success && response.data.data.items) {
         const mappedItems = response.data.data.items.map(item => ({
           _id: item.product._id,
@@ -140,7 +148,8 @@ export const CartProvider = ({ children }) => {
         status: error.response?.status,
         data: error.response?.data,
         serviceData,
-        userId: user?._id
+        userId: user?._id,
+        headers: error.response?.headers
       });
 
       if (error.response?.status === 401) {
