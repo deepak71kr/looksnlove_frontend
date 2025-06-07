@@ -1,6 +1,7 @@
 import React from 'react'
 import BeautyBanner from '../components/BeautyBanner'
-import ComboOffersDisc from '../components/ComboOffersDisc'
+import HomeServices from '../components/HomeServices'
+import ComboPackages from '../components/ComboPackages'
 import RatingCard from '../components/RatingCard'
 import Review from '../components/Review'
 
@@ -9,7 +10,8 @@ const Home = () => {
     <div className="w-full min-w-full overflow-x-hidden">
       <BeautyBanner />
       <div className="w-full space-y-4 sm:space-y-6">
-        <ComboOffersDisc />
+        <HomeServices />
+        <ComboPackages />
         <RatingCard />
         <Review />
       </div>
