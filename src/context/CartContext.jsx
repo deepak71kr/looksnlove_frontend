@@ -44,8 +44,20 @@ export const CartProvider = ({ children }) => {
           'Content-Type': 'application/json'
         }
       });
-      setCartItems(response.data.items || []);
+      
+      if (response.data.success && response.data.data.items) {
+        setCartItems(response.data.data.items.map(item => ({
+          _id: item.product._id,
+          name: item.product.name,
+          price: item.product.price,
+          images: item.product.images,
+          quantity: item.quantity
+        })));
+      } else {
+        setCartItems([]);
+      }
     } catch (error) {
+      console.error('Error fetching cart:', error);
       const savedCart = localStorage.getItem('cart');
       if (savedCart) {
         setCartItems(JSON.parse(savedCart));
