@@ -114,6 +114,12 @@ export const CartProvider = ({ children }) => {
         {
           serviceId: serviceData._id,
           quantity: 1
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
       );
       

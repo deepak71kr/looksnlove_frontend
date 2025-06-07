@@ -78,7 +78,13 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
     try {
       setLoadingItems(prev => ({ ...prev, [service._id]: true }));
       
-      const success = await addToCart(service);
+      const success = await addToCart({
+        _id: service._id,
+        name: service.name,
+        price: service.price || (service.prices && service.prices[0]) || 0,
+        images: service.images
+      });
+
       if (success) {
         // Show success notification
         const notification = document.createElement('div');
@@ -105,7 +111,7 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
       // Show error notification
       const notification = document.createElement('div');
       notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      notification.textContent = 'Failed to add service to cart';
+      notification.textContent = error.message || 'Failed to add service to cart';
       document.body.appendChild(notification);
       
       setTimeout(() => {
