@@ -23,6 +23,7 @@ export const CartProvider = ({ children }) => {
   axios.defaults.withCredentials = true;
   axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   axios.defaults.headers.common['Content-Type'] = 'application/json';
+  axios.defaults.headers.common['Accept'] = 'application/json';
 
   const fetchCartItems = useCallback(async () => {
     if (!isAuthenticated || !user) {
@@ -38,18 +39,13 @@ export const CartProvider = ({ children }) => {
 
     try {
       setLoading(true);
-      const response = await axios.get('/api/cart', {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axios.get('/api/cart');
       
       if (response.data.success && response.data.data.items) {
         setCartItems(response.data.data.items.map(item => ({
           _id: item.product._id,
           name: item.product.name,
-          price: item.product.price,
+          price: item.product.price || (item.product.prices && item.product.prices[0]) || 0,
           images: item.product.images,
           quantity: item.quantity
         })));
@@ -91,12 +87,6 @@ export const CartProvider = ({ children }) => {
         {
           serviceId: serviceData._id,
           quantity: 1
-        },
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json'
-          }
         }
       );
       
@@ -104,7 +94,7 @@ export const CartProvider = ({ children }) => {
         setCartItems(response.data.data.items.map(item => ({
           _id: item.product._id,
           name: item.product.name,
-          price: item.product.price,
+          price: item.product.price || (item.product.prices && item.product.prices[0]) || 0,
           images: item.product.images,
           quantity: item.quantity
         })));
@@ -112,6 +102,7 @@ export const CartProvider = ({ children }) => {
       }
       throw new Error('Invalid response from server');
     } catch (error) {
+      console.error('Add to cart error:', error);
       if (error.response?.status === 401) {
         navigate('/login');
         return false;
