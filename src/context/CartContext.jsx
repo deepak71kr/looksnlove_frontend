@@ -97,11 +97,18 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = useCallback(async (serviceData) => {
     if (!isAuthenticated || !user) {
+      console.log('User not authenticated, redirecting to login');
       navigate('/login');
       return false;
     }
 
     try {
+      console.log('Adding to cart:', {
+        serviceData,
+        userId: user._id,
+        isAuthenticated
+      });
+
       setLoading(true);
       const response = await axios.post('/api/cart/add', 
         {
@@ -110,26 +117,47 @@ export const CartProvider = ({ children }) => {
         }
       );
       
+      console.log('Add to cart response:', {
+        status: response.status,
+        data: response.data
+      });
+      
       if (response.data.success && response.data.data.items) {
-        setCartItems(response.data.data.items.map(item => ({
+        const mappedItems = response.data.data.items.map(item => ({
           _id: item.product._id,
           name: item.product.name,
           price: item.product.price || (item.product.prices && item.product.prices[0]) || 0,
           images: item.product.images,
           quantity: item.quantity
-        })));
+        }));
+
+        console.log('Mapped cart items:', mappedItems);
+        setCartItems(mappedItems);
         return true;
       }
       throw new Error('Invalid response from server');
     } catch (error) {
-      console.error('Add to cart error:', error);
+      console.error('Add to cart error:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        serviceData,
+        userId: user?._id
+      });
+
       if (error.response?.status === 401) {
+        console.log('Unauthorized, redirecting to login');
         navigate('/login');
         return false;
       }
+
       setCartItems(prevItems => {
         const existingItem = prevItems.find(i => i._id === serviceData._id);
-        if (existingItem) return prevItems;
+        if (existingItem) {
+          console.log('Item already in local cart, not adding');
+          return prevItems;
+        }
+        console.log('Adding item to local cart');
         return [...prevItems, { ...serviceData, _id: Date.now().toString() }];
       });
       return true;
