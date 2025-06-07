@@ -89,6 +89,12 @@ const Checkout = () => {
           address: `${formData.address}, ${formData.city}, ${formData.state}`,
           pincode: formData.pincode
         },
+        items: cartItems.map(item => ({
+          serviceName: item.serviceName || item.name,
+          category: item.category,
+          price: item.price
+        })),
+        total: cartTotal,
         deliveryDate: formattedDate,
         deliveryTime: deliveryTime,
         additionalInstructions: formData.message || ''

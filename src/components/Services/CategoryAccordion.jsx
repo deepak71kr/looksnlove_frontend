@@ -74,23 +74,11 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
     }, 700);
   };
 
-  const handleAddToCart = async (service, category, serviceIndex) => {
+  const handleAddToCart = async (service) => {
     try {
       setLoadingItems(prev => ({ ...prev, [serviceIndex]: true }));
       
-      const cartItem = {
-        serviceName: service.name,
-        category: category.category,
-        price: service.prices[0],
-        date: new Date().toISOString().split('T')[0], // Today's date
-        time: new Date().toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: true 
-        })
-      };
-      
-      const success = await addToCart(cartItem);
+      const success = await addToCart(service);
       if (success) {
         // Show success notification
         const notification = document.createElement('div');
@@ -123,7 +111,7 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
       setTimeout(() => {
         notification.remove();
       }, 2000);
-    
+    } finally {
       setLoadingItems(prev => ({ ...prev, [serviceIndex]: false }));
     }
   };
@@ -227,7 +215,7 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
                           )}
                         </div>
                         <button
-                          onClick={() => handleAddToCart(service, category, serviceIndex)}
+                          onClick={() => handleAddToCart(service)}
                           disabled={loadingItems[serviceIndex]}
                           className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-all duration-700 transform hover:scale-105 hover:shadow-md text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                         >

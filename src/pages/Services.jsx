@@ -82,19 +82,7 @@ const ServicesPage = () => {
 
   const handleAddToCart = async (service) => {
     try {
-      const cartItem = {
-        serviceName: service.name,
-        category: selectedCategory.category,
-        price: service.price,
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: true 
-        })
-      };
-      
-      await addToCart(cartItem);
+      await addToCart(service);
       
       // Show success notification
       const notification = document.createElement('div');

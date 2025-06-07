@@ -76,7 +76,10 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.post('/api/cart/add', 
-        serviceData,
+        {
+          serviceId: serviceData._id,
+          quantity: 1
+        },
         {
           withCredentials: true,
           headers: {
@@ -85,8 +88,8 @@ export const CartProvider = ({ children }) => {
         }
       );
       
-      if (response.data.items) {
-        setCartItems(response.data.items);
+      if (response.data.success && response.data.data.items) {
+        setCartItems(response.data.data.items);
         return true;
       }
       throw new Error('Invalid response from server');
