@@ -106,8 +106,7 @@ export const CartProvider = ({ children }) => {
       console.log('Adding to cart:', {
         serviceData,
         userId: user._id,
-        isAuthenticated,
-        token: localStorage.getItem('token')
+        isAuthenticated
       });
 
       // Ensure we have a valid service ID
@@ -116,23 +115,9 @@ export const CartProvider = ({ children }) => {
       }
 
       setLoading(true);
-      const response = await axios.post('/api/cart/add', 
-        {
-          serviceId: serviceData._id,
-          quantity: 1
-        },
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
-      
-      console.log('Add to cart response:', {
-        status: response.status,
-        data: response.data
+      const response = await axios.post('/api/cart/add', {
+        serviceId: serviceData._id,
+        quantity: 1
       });
       
       if (response.data.success && response.data.data.items) {
@@ -144,7 +129,6 @@ export const CartProvider = ({ children }) => {
           quantity: item.quantity
         }));
 
-        console.log('Mapped cart items:', mappedItems);
         setCartItems(mappedItems);
         return true;
       }
@@ -155,28 +139,12 @@ export const CartProvider = ({ children }) => {
         status: error.response?.status,
         data: error.response?.data,
         serviceData,
-        userId: user?._id,
-        token: localStorage.getItem('token')
+        userId: user?._id
       });
 
       if (error.response?.status === 401) {
-        console.log('Unauthorized, redirecting to login');
         navigate('/login');
         return false;
-      }
-
-      // Fallback to local storage for unauthenticated users
-      if (!isAuthenticated) {
-        setCartItems(prevItems => {
-          const existingItem = prevItems.find(i => i._id === serviceData._id);
-          if (existingItem) {
-            console.log('Item already in local cart, not adding');
-            return prevItems;
-          }
-          console.log('Adding item to local cart');
-          return [...prevItems, { ...serviceData, quantity: 1 }];
-        });
-        return true;
       }
 
       throw error;

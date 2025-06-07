@@ -82,6 +82,17 @@ const ServicesPage = () => {
 
   const handleAddToCart = async (service) => {
     try {
+      console.log('Adding service to cart:', {
+        serviceId: service._id,
+        name: service.name,
+        price: service.price,
+        prices: service.prices
+      });
+
+      if (!service._id) {
+        throw new Error('Invalid service: Missing service ID');
+      }
+
       const success = await addToCart({
         _id: service._id,
         name: service.name,
@@ -111,13 +122,25 @@ const ServicesPage = () => {
         }, 2000);
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      // Show error notification
+      console.error('Error adding to cart:', {
+        error: error.message,
+        service: service,
+        response: error.response?.data
+      });
+
+      // Show error notification with more specific message
       const notification = document.createElement('div');
       notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      notification.textContent = error.message || 'Failed to add service to cart';
-      document.body.appendChild(notification);
       
+      if (error.response?.status === 404) {
+        notification.textContent = 'Service not found. Please try again.';
+      } else if (error.response?.status === 401) {
+        notification.textContent = 'Please login to add items to cart';
+      } else {
+        notification.textContent = error.message || 'Failed to add service to cart';
+      }
+      
+      document.body.appendChild(notification);
       setTimeout(() => {
         notification.remove();
       }, 2000);
