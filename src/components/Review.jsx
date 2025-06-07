@@ -1,5 +1,4 @@
-// POST /api/cart/add
-router.post('/add', auth, addToCart);import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import "tailwindcss/tailwind.css";
 
