@@ -106,8 +106,14 @@ export const CartProvider = ({ children }) => {
       console.log('Adding to cart:', {
         serviceData,
         userId: user._id,
-        isAuthenticated
+        isAuthenticated,
+        token: localStorage.getItem('token')
       });
+
+      // Ensure we have a valid service ID
+      if (!serviceData._id) {
+        throw new Error('Invalid service ID');
+      }
 
       setLoading(true);
       const response = await axios.post('/api/cart/add', 
@@ -118,7 +124,8 @@ export const CartProvider = ({ children }) => {
         {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         }
       );
@@ -148,7 +155,8 @@ export const CartProvider = ({ children }) => {
         status: error.response?.status,
         data: error.response?.data,
         serviceData,
-        userId: user?._id
+        userId: user?._id,
+        token: localStorage.getItem('token')
       });
 
       if (error.response?.status === 401) {
