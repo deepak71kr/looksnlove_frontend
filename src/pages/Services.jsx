@@ -82,36 +82,65 @@ const ServicesPage = () => {
 
   const handleAddToCart = async (service) => {
     try {
-      const cartItem = {
-        serviceName: service.name,
-        category: selectedCategory.category,
+      console.log('Adding service to cart:', {
+        serviceId: service._id,
+        name: service.name,
         price: service.price,
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: true 
-        })
-      };
-      
-      await addToCart(cartItem);
-      
-      // Show success notification
-      const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      notification.textContent = 'Service added to cart!';
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.remove();
-      }, 2000);
+        prices: service.prices
+      });
+
+      if (!service._id) {
+        throw new Error('Invalid service: Missing service ID');
+      }
+
+      const success = await addToCart({
+        _id: service._id,
+        name: service.name,
+        price: service.price || (service.prices && service.prices[0]) || 0,
+        images: service.images
+      });
+
+      if (success) {
+        // Show success notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
+        notification.textContent = 'Service added to cart!';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.remove();
+        }, 2000);
+      } else {
+        // Show error notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
+        notification.textContent = 'Please login to add items to cart';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.remove();
+        }, 2000);
+      }
     } catch (error) {
-      // Show error notification
+      console.error('Error adding to cart:', {
+        error: error.message,
+        service: service,
+        response: error.response?.data
+      });
+
+      // Show error notification with more specific message
       const notification = document.createElement('div');
       notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      notification.textContent = error.message || 'Failed to add service to cart';
-      document.body.appendChild(notification);
       
+      if (error.response?.status === 404) {
+        notification.textContent = 'Service not found. Please try again.';
+      } else if (error.response?.status === 401) {
+        notification.textContent = 'Please login to add items to cart';
+      } else {
+        notification.textContent = error.message || 'Failed to add service to cart';
+      }
+      
+      document.body.appendChild(notification);
       setTimeout(() => {
         notification.remove();
       }, 2000);

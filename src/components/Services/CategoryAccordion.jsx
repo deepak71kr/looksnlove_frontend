@@ -74,57 +74,45 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
     }, 700);
   };
 
-  const handleAddToCart = async (service, category, serviceIndex) => {
+  const handleAddToCart = async (service) => {
     try {
-      setLoadingItems(prev => ({ ...prev, [serviceIndex]: true }));
+      setLoadingItems(prev => ({ ...prev, [service._id]: true }));
+      console.log('Adding to cart:', service);
       
-      const cartItem = {
-        serviceName: service.name,
-        category: category.category,
-        price: service.prices[0],
-        date: new Date().toISOString().split('T')[0], // Today's date
-        time: new Date().toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: true 
-        })
-      };
-      
-      const success = await addToCart(cartItem);
-      if (success) {
-        // Show success notification
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-        notification.textContent = 'Service added to cart!';
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          notification.remove();
-        }, 2000);
-      } else {
-        // Show error notification
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-        notification.textContent = 'Please login to add items to cart';
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          notification.remove();
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      // Show error notification
+      await addToCart({
+        _id: service._id,
+        name: service.name,
+        price: service.price,
+        images: service.images || []
+      });
+
+      // Create success notification
       const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      notification.textContent = 'Failed to add service to cart';
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50';
+      notification.textContent = `${service.name} added to cart!`;
       document.body.appendChild(notification);
-      
+
+      // Remove notification after 2 seconds
       setTimeout(() => {
         notification.remove();
       }, 2000);
-    
-      setLoadingItems(prev => ({ ...prev, [serviceIndex]: false }));
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      
+      // Create error notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
+      notification.textContent = error.response?.status === 401 
+        ? 'Please log in to add items to cart'
+        : error.response?.data?.message || 'Error adding to cart';
+      document.body.appendChild(notification);
+
+      // Remove notification after 2 seconds
+      setTimeout(() => {
+        notification.remove();
+      }, 2000);
+    } finally {
+      setLoadingItems(prev => ({ ...prev, [service._id]: false }));
     }
   };
 
@@ -227,11 +215,11 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
                           )}
                         </div>
                         <button
-                          onClick={() => handleAddToCart(service, category, serviceIndex)}
-                          disabled={loadingItems[serviceIndex]}
+                          onClick={() => handleAddToCart(service)}
+                          disabled={loadingItems[service._id]}
                           className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-all duration-700 transform hover:scale-105 hover:shadow-md text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                         >
-                          {loadingItems[serviceIndex] ? (
+                          {loadingItems[service._id] ? (
                             <Loader2 className="animate-spin" size={20} />
                           ) : (
                             'Add to Cart'
