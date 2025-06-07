@@ -77,43 +77,37 @@ const CategoryAccordion = ({ categories, initialOpenCategory = -1 }) => {
   const handleAddToCart = async (service) => {
     try {
       setLoadingItems(prev => ({ ...prev, [service._id]: true }));
+      console.log('Adding to cart:', service);
       
-      const success = await addToCart({
+      await addToCart({
         _id: service._id,
         name: service.name,
-        price: service.price || (service.prices && service.prices[0]) || 0,
-        images: service.images
+        price: service.price,
+        images: service.images || []
       });
 
-      if (success) {
-        // Show success notification
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-        notification.textContent = 'Service added to cart!';
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          notification.remove();
-        }, 2000);
-      } else {
-        // Show error notification
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-        notification.textContent = 'Please login to add items to cart';
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          notification.remove();
-        }, 2000);
-      }
+      // Create success notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50';
+      notification.textContent = `${service.name} added to cart!`;
+      document.body.appendChild(notification);
+
+      // Remove notification after 2 seconds
+      setTimeout(() => {
+        notification.remove();
+      }, 2000);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      // Show error notification
-      const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      notification.textContent = error.message || 'Failed to add service to cart';
-      document.body.appendChild(notification);
       
+      // Create error notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
+      notification.textContent = error.response?.status === 401 
+        ? 'Please log in to add items to cart'
+        : error.response?.data?.message || 'Error adding to cart';
+      document.body.appendChild(notification);
+
+      // Remove notification after 2 seconds
       setTimeout(() => {
         notification.remove();
       }, 2000);

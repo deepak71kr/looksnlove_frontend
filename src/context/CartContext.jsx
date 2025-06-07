@@ -157,16 +157,21 @@ export const CartProvider = ({ children }) => {
         return false;
       }
 
-      setCartItems(prevItems => {
-        const existingItem = prevItems.find(i => i._id === serviceData._id);
-        if (existingItem) {
-          console.log('Item already in local cart, not adding');
-          return prevItems;
-        }
-        console.log('Adding item to local cart');
-        return [...prevItems, { ...serviceData, _id: Date.now().toString() }];
-      });
-      return true;
+      // Fallback to local storage for unauthenticated users
+      if (!isAuthenticated) {
+        setCartItems(prevItems => {
+          const existingItem = prevItems.find(i => i._id === serviceData._id);
+          if (existingItem) {
+            console.log('Item already in local cart, not adding');
+            return prevItems;
+          }
+          console.log('Adding item to local cart');
+          return [...prevItems, { ...serviceData, quantity: 1 }];
+        });
+        return true;
+      }
+
+      throw error;
     } finally {
       setLoading(false);
     }

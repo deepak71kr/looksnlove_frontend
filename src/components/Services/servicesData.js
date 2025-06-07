@@ -55,15 +55,17 @@ export const fetchServicesData = async () => {
         category: category.name,
         image: getCategoryImage(category.name),
         subcategories: category.services.map(service => ({
+          _id: service._id,
           name: service.name || 'Unnamed Service',
           price: service.price || 0,
-          description: service.description || 'No description available'
+          description: service.description || 'No description available',
+          images: service.images || []
         })).filter(service => service.name !== 'Unnamed Service')
       };
 
       console.log('Processed category data:', categoryData);
       return categoryData;
-    }).filter(Boolean); // Remove any null entries
+    }).filter(Boolean);
 
     // Sort categories to put combo packages at the top
     const sortedCategories = processedCategories.sort((a, b) => {
