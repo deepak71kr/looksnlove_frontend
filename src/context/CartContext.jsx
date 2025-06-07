@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/api';
 
 const CartContext = createContext();
 
@@ -115,7 +116,7 @@ export const CartProvider = ({ children }) => {
       }
 
       setLoading(true);
-      const response = await axios.post('/api/cart/add', {
+      const response = await api.post('/cart/add', {
         serviceId: serviceData._id,
         quantity: 1
       });
